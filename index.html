@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="mr">
 <head>
-<!-- STREAMING_CHUNK:Configuring metadata and loading Google Fonts... -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>शिक्षक व शाळा नोंदवही पोर्टल</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif:ital,wght@0,500;0,600;0,700;1,500&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  /* STREAMING_CHUNK:Defining CSS variables and base layout styles... */
   :root{
     --navy:#16303F;
     --navy-2:#1F435A;
@@ -74,7 +72,7 @@
   }
   .dot{width:7px;height:7px;border-radius:50%;background:#7FBE95;}
   
-  /* STREAMING_CHUNK:Styling buttons and UI components... */
+  /* ---------- Buttons ---------- */
   .btn{
     font-family:inherit;cursor:pointer;border:none;border-radius:var(--radius);
     padding:8px 14px;font-size:13.5px;font-weight:600;letter-spacing:.2px;
@@ -119,7 +117,6 @@
   }
   p.section-sub{margin:0 0 16px;color:var(--ink-soft);font-size:13px;}
 
-  /* STREAMING_CHUNK:Styling dashboard widgets and cards... */
   /* ---------- Dashboard ---------- */
   .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;}
   .stat-card{
@@ -148,7 +145,6 @@
   .spacer{flex:1;}
   .result-count{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;}
 
-  /* STREAMING_CHUNK:Styling data tables and badges... */
   /* ---------- Table ---------- */
   .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);}
   table.data{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px;}
@@ -172,7 +168,6 @@
   .pagination{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap;}
   .page-info{font-size:12.5px;color:var(--ink-soft);margin:0 8px;}
 
-  /* STREAMING_CHUNK:Styling school overview cards... */
   /* ---------- School cards ---------- */
   .school-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
   .school-card{
@@ -187,7 +182,6 @@
   .mini-badge{font-size:10.5px;padding:1px 7px;border-radius:10px;font-weight:600;}
   .s-num { color:var(--maroon); font-weight:700; margin-right:4px; font-size:15px; }
 
-  /* STREAMING_CHUNK:Styling overlay modals and popups... */
   /* ---------- Modal ---------- */
   .overlay{
     position:fixed;inset:0;background:rgba(20,30,35,.55);
@@ -233,10 +227,9 @@
     .field-row{flex-direction:column;gap:0;}
   }
 
-  /* STREAMING_CHUNK:Adding Print CSS for proper PDF generation... */
-  /* ---------- Print Styles (Bug Fixed) ---------- */
+  /* ---------- Print Styles ---------- */
   @media print {
-    body > :not(#printArea) { display: none !important; } /* Hides UI components completely to prevent blank pages */
+    body > :not(#printArea) { display: none !important; } 
     
     #printArea { display: block !important; position: static; width: 100%; padding: 0; background: #fff; color: #000; font-family: sans-serif; }
     
@@ -260,7 +253,6 @@
 </head>
 <body>
 
-<!-- STREAMING_CHUNK:Building the HTML Layout structure... -->
 <div class="letterhead">
   <div class="letterhead-inner">
     <div class="lh-title-block">
@@ -293,7 +285,6 @@
 <div id="printArea"></div>
 
 <script>
-/* STREAMING_CHUNK:Initializing state, metadata, and core variables... */
 /* =========================================================
    DATA & CONFIG
    ========================================================= */
@@ -403,7 +394,9 @@ let headerSettings = {
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzGYiFsV-ee7CpNG1uEj9PEQzKuw9W3-BXRBrlm49CKwiFjFbhAdFPqMlXBqHz82RU/exec";
 
-/* STREAMING_CHUNK:Loading and parsing Database logic... */
+/* =========================================================
+   STORAGE & SYNC
+   ========================================================= */
 function normalizeRecord(r){
   let st = r.status;
   if(st === 'Active') st = 'उपस्थित';
@@ -420,9 +413,6 @@ function normalizeRecord(r){
   };
 }
 
-/* =========================================================
-   STORAGE & SYNC
-   ========================================================= */
 async function loadDB(){
   try{
     const res = localStorage.getItem('teachers-db');
@@ -480,7 +470,6 @@ function renderHeaderText(){
   document.getElementById('headerSub').textContent = subText;
 }
 
-/* STREAMING_CHUNK:Setting up helper and manipulation functions... */
 /* =========================================================
    HELPERS
    ========================================================= */
@@ -504,7 +493,6 @@ function badgeClass(status){
 }
 function statusLabel(status){ return STATUS_LABEL_MR[status] || status || '—'; }
 
-// BUG-FIX: Unique Schools logic now groups purely by UDISE key so records map properly
 function uniqueSchools(){
   const map = new Map();
 
@@ -553,7 +541,6 @@ function customKeysFor(list){
   return Array.from(keys);
 }
 
-// BUG-FIX: Fetch dropdown options directly from actual rendered schools (solves missing specific category options)
 function getDropdownLists(schoolsList){
   const allM = new Set();
   const allC = new Set();
@@ -564,7 +551,6 @@ function getDropdownLists(schoolsList){
   return { mgtList: Array.from(allM).sort(), clsList: Array.from(allC).sort() };
 }
 
-/* STREAMING_CHUNK:Implementing admin and authentication logic... */
 /* =========================================================
    RENDER: ADMIN AREA
    ========================================================= */
@@ -716,7 +702,6 @@ function bindClose(ids){
   });
 }
 
-/* STREAMING_CHUNK:Implementing forms to Add or Edit Teachers... */
 function openTeacherForm(record){
   const isEdit = !!record;
   const r = record || {id:null, brc:(allBrcs()[0]||'AMBAJOGAI'), school:'', udise:'', teacher:'', status:'उपस्थित', custom:{}};
@@ -812,9 +797,8 @@ function customRowHtml(k,v){
   </div>`;
 }
 
-/* STREAMING_CHUNK:Preparing Printer and PDF exporter functions... */
 /* =========================================================
-   PRINT IMPLEMENTATION (Bug Fixed: added Timeout & CSS fixes)
+   PRINT IMPLEMENTATION
    ========================================================= */
 function triggerPrintDialog(htmlContent, documentTitle) {
   const printArea = document.getElementById('printArea');
@@ -822,7 +806,6 @@ function triggerPrintDialog(htmlContent, documentTitle) {
   const originalTitle = document.title;
   document.title = documentTitle;
   
-  // Timeout added for stability in all browsers rendering wide tables
   setTimeout(() => {
     window.print();
     document.title = originalTitle;
@@ -916,7 +899,6 @@ function printFullInfo(list, titleText){
   triggerPrintDialog(html, 'Teacher_Register_Full');
 }
 
-/* STREAMING_CHUNK:Rendering Dashboard and Tabs UI logic... */
 /* =========================================================
    MAIN RENDER
    ========================================================= */
@@ -978,7 +960,6 @@ function renderDashboard(){
 
 function renderTeachersTab(){
   let list = DB.filter(r=>{
-    // Fix: Match key generation to uniqueSchools
     let cardKey = r.udise && SCHOOL_META[r.udise] ? r.udise : (r.school + '||' + (r.udise||''));
     if(!isAdmin && hiddenSchools.includes(cardKey)) return false;
     
@@ -1192,7 +1173,6 @@ function renderSchoolDetail(info){
   `;
 }
 
-/* STREAMING_CHUNK:Attaching event listeners and finishing initialization... */
 /* =========================================================
    EVENT WIRING
    ========================================================= */
