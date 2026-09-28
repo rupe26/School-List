@@ -1,748 +1,1267 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="mr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduAdmin - Advanced School Management Portal</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>शिक्षक नोंदवही</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Serif:ital,wght@0,500;0,600;0,700;1,500&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16303F;
+    --navy-2:#1F435A;
+    --paper:#F6F1E4;
+    --paper-2:#EEE6D2;
+    --card:#FFFEFA;
+    --ink:#241F17;
+    --ink-soft:#5B5546;
+    --line:#D9CDAE;
+    --maroon:#8A2E3B;
+    --maroon-dark:#6E202B;
+    --gold:#A9781F;
+    --green:#2E6B4E;
+    --green-bg:#E4EFE7;
+    --amber:#9C6B14;
+    --amber-bg:#F4EAD2;
+    --red:#8A2E3B;
+    --red-bg:#F3E2E2;
+    --radius:3px;
+    --shadow:0 1px 2px rgba(22,48,63,.08), 0 4px 14px rgba(22,48,63,.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans Devanagari','Noto Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  ::selection{background:var(--gold);color:#fff;}
+
+  /* ---------- Letterhead ---------- */
+  .letterhead{
+    background:linear-gradient(180deg,var(--navy) 0%, var(--navy-2) 100%);
+    color:#F3EEDF;
+    padding:18px 20px 16px;
+    border-bottom:4px solid var(--gold);
+    position:relative;
+  }
+  .letterhead-inner{
+    max-width:1180px;margin:0 auto;
+    display:flex;align-items:center;gap:14px;justify-content:space-between;
+    flex-wrap:wrap;
+  }
+  .lh-title-block{display:flex;align-items:center;gap:12px;min-width:0;}
+  .seal{
+    width:46px;height:46px;flex:0 0 auto;border-radius:50%;
+    border:2px solid #D8C088;
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 35% 30%, #2A5069, #16303F);
+    font-family:'Noto Serif',serif;font-weight:700;color:#E9CE8E;font-size:18px;
+  }
+  .lh-text h1{
+    font-family:'Noto Sans Devanagari','Noto Serif',serif;
+    font-size:19px;line-height:1.35;margin:0;font-weight:700;letter-spacing:.2px;
+  }
+  .lh-text p{margin:2px 0 0;font-size:12.5px;color:#C9D4D9;font-family:'Noto Serif',serif;font-style:italic;}
+  .lh-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .admin-pill{
+    display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.2);padding:6px 10px;border-radius:20px;font-size:12.5px;
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:#7FBE95;}
+  .btn{
+    font-family:inherit;cursor:pointer;border:none;border-radius:var(--radius);
+    padding:8px 14px;font-size:13.5px;font-weight:600;letter-spacing:.2px;
+    transition:transform .08s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-gold{background:var(--gold);color:#241905;}
+  .btn-gold:hover{background:#BC8A2C;}
+  .btn-outline-light{background:transparent;color:#F3EEDF;border:1px solid rgba(255,255,255,.4);}
+  .btn-outline-light:hover{background:rgba(255,255,255,.1);}
+  .btn-maroon{background:var(--maroon);color:#fff;}
+  .btn-maroon:hover{background:var(--maroon-dark);}
+  .btn-navy{background:var(--navy);color:#F3EEDF;}
+  .btn-navy:hover{background:var(--navy-2);}
+  .btn-ghost{background:transparent;color:var(--navy);border:1px solid var(--line);}
+  .btn-ghost:hover{background:var(--paper-2);}
+  .btn-danger{background:transparent;color:var(--red);border:1px solid var(--red);}
+  .btn-danger:hover{background:var(--red-bg);}
+  .btn-sm{padding:5px 10px;font-size:12px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  /* ---------- Tabs ---------- */
+  .tabbar{
+    background:var(--card);border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:20;
+  }
+  .tabbar-inner{max-width:1180px;margin:0 auto;display:flex;gap:2px;padding:0 20px;overflow-x:auto;}
+  .tab-btn{
+    background:none;border:none;font-family:inherit;cursor:pointer;
+    padding:13px 16px 11px;font-size:14px;font-weight:600;color:var(--ink-soft);
+    border-bottom:3px solid transparent;white-space:nowrap;
+  }
+  .tab-btn.active{color:var(--maroon);border-bottom-color:var(--maroon);}
+
+  /* ---------- Layout ---------- */
+  .wrap{max-width:1180px;margin:0 auto;padding:20px;}
+  .hidden{display:none !important;}
+
+  h2.section-title{
+    font-family:'Noto Serif',serif;font-weight:700;font-size:19px;color:var(--navy);
+    margin:0 0 3px;
+  }
+  p.section-sub{margin:0 0 16px;color:var(--ink-soft);font-size:13px;}
+
+  /* ---------- Dashboard ---------- */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;}
+  .stat-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;box-shadow:var(--shadow);border-top:3px solid var(--navy);
+  }
+  .stat-card .num{font-family:'Noto Serif',serif;font-size:26px;font-weight:700;color:var(--navy);}
+  .stat-card .lbl{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:18px;}
+  .panel h3{margin:0 0 12px;font-size:14.5px;color:var(--navy);font-family:'Noto Serif',serif;}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:13px;}
+  .bar-row .bar-label{width:110px;flex:0 0 auto;color:var(--ink-soft);}
+  .bar-track{flex:1;background:var(--paper-2);border-radius:8px;height:14px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:8px;}
+  .bar-row .bar-val{width:44px;text-align:right;font-weight:600;color:var(--ink);}
+
+  /* ---------- Toolbar / filters ---------- */
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center;}
+  .input, select.input{
+    font-family:inherit;border:1px solid var(--line);background:var(--card);
+    padding:8px 10px;border-radius:var(--radius);font-size:13.5px;color:var(--ink);
+  }
+  .input:focus, select.input:focus{outline:2px solid #C9AE6E;outline-offset:0;border-color:var(--gold);}
+  .search-input{flex:1;min-width:180px;}
+  .spacer{flex:1;}
+  .result-count{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;}
+
+  /* ---------- Table ---------- */
+  .table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card);}
+  table.data{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px;}
+  table.data thead th{
+    text-align:left;background:var(--navy);color:#EFE9D8;padding:10px 12px;
+    font-weight:600;font-size:12.5px;position:sticky;top:0;
+  }
+  table.data tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.data tbody tr:hover{background:var(--paper-2);}
+  table.data tbody tr:last-child td{border-bottom:none;}
+  .muted{color:var(--ink-soft);}
+  .badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11.5px;font-weight:600;white-space:nowrap;}
+  .badge-green{background:var(--green-bg);color:var(--green);}
+  .badge-amber{background:var(--amber-bg);color:var(--amber);}
+  .badge-red{background:var(--red-bg);color:var(--red);}
+  .badge-blue{background:#DCE6EE;color:#3B6EA5;}
+  .badge-gray{background:#E0E0E0;color:#555;}
+  .badge-purple{background:#F3E5F5;color:#8E44AD;}
+  
+  .row-actions{display:flex;gap:6px;white-space:nowrap;}
+  .pagination{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+  .page-info{font-size:12.5px;color:var(--ink-soft);margin:0 8px;}
+
+  /* ---------- School cards ---------- */
+  .school-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
+  .school-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:13px 14px;box-shadow:var(--shadow);cursor:pointer;transition:border-color .12s, opacity .2s;
+  }
+  .school-card:hover{border-color:var(--gold);}
+  .school-card.school-hidden { opacity: 0.55; background: #EFEFEF; }
+  .school-card h4{margin:0 0 6px;font-size:14.5px;color:var(--navy);line-height:1.35;font-family:'Noto Serif',serif;}
+  .school-card .meta{font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+  .school-card .badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;}
+  .mini-badge{font-size:10.5px;padding:1px 7px;border-radius:10px;font-weight:600;}
+  .s-num { color:var(--maroon); font-weight:700; margin-right:4px; font-size:15px; }
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(20,30,35,.55);
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:26px 14px;overflow-y:auto;z-index:100;
+  }
+  .modal{
+    background:var(--paper);border-radius:6px;max-width:560px;width:100%;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);border-top:5px solid var(--gold);
+    animation:pop .12s ease-out;
+  }
+  @keyframes pop{from{transform:translateY(6px);opacity:.6;}to{transform:translateY(0);opacity:1;}}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 8px;}
+  .modal-head h3{margin:0;font-family:'Noto Serif',serif;font-size:17px;color:var(--navy);}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink-soft);line-height:1;padding:4px;}
+  .modal-body{padding:6px 18px 18px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;}
+  .field .input{width:100%;}
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;}
+  .custom-row{display:flex;gap:8px;margin-bottom:8px;}
+  .custom-row .input{flex:1;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+  .helptext{font-size:12px;color:var(--ink-soft);margin:-2px 0 10px;}
+  .divider{border:none;border-top:1px solid var(--line);margin:14px 0;}
+
+  .empty-state{text-align:center;padding:40px 20px;color:var(--ink-soft);}
+  .empty-state .big{font-size:30px;margin-bottom:8px;}
+
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:var(--navy);color:#F3EEDF;padding:10px 18px;border-radius:6px;
+    font-size:13.5px;box-shadow:var(--shadow);z-index:200;opacity:0;transition:opacity .2s, bottom .2s;
+    pointer-events:none;
+  }
+  .toast.show{opacity:1;bottom:30px;}
+  footer.foot{text-align:center;padding:26px 14px 34px;color:var(--ink-soft);font-size:12px;}
+
+  @media (max-width:600px){
+    .lh-text h1{font-size:16px;}
+    .bar-row .bar-label{width:90px;font-size:12px;}
+    .field-row{flex-direction:column;gap:0;}
+  }
+
+  /* ---------- Print Styles ---------- */
+  @media print {
+    body * { visibility: hidden; }
+    #printArea, #printArea * { visibility: visible; }
+    #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 0; background: #fff; color: #000; font-family: sans-serif; }
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    #printArea h2 { margin: 0 0 5px; font-size: 22px; text-align: center; }
+    #printArea .print-sub { text-align: center; font-size: 14px; margin-bottom: 20px; }
     
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Toast Animation */
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
-
-        /* Robust A4 PDF Print Styles */
-        @media print {
-            /* Reset body and container constraints */
-            html, body, main, .main-content, .print-container {
-                height: auto !important;
-                width: 100% !important;
-                overflow: visible !important;
-                position: static !important;
-                display: block !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                background-color: white !important;
-            }
-            
-            /* Remove scroll constraints on table containers */
-            .overflow-hidden, .overflow-y-auto, .overflow-auto, div[style*="max-height"] {
-                overflow: visible !important;
-                height: auto !important;
-                max-height: none !important;
-            }
-
-            /* Hide UI Elements not needed for print */
-            .sidebar, .topbar, .no-print, header, aside, #toastContainer, #pinModal, #schoolModal { 
-                display: none !important; 
-            }
-            
-            @page { size: A4 landscape; margin: 10mm; }
-            
-            /* Expand Table for multi-page printing */
-            table { 
-                width: 100% !important; 
-                border-collapse: collapse !important; 
-                table-layout: auto !important;
-                page-break-inside: auto;
-            }
-            
-            thead { display: table-header-group !important; }
-            tr { page-break-inside: avoid !important; page-break-after: auto; }
-            
-            th, td { 
-                border: 1px solid #94a3b8 !important; 
-                padding: 6px !important; 
-                font-size: 11px !important; 
-                text-align: left; 
-                color: black !important;
-                white-space: normal !important;
-                word-wrap: break-word !important;
-            }
-            
-            th { 
-                background-color: #f1f5f9 !important; 
-                -webkit-print-color-adjust: exact; 
-                font-weight: bold !important;
-            }
-            
-            .group-header { 
-                background-color: #e2e8f0 !important; 
-                font-weight: bold; 
-                text-align: center; 
-                -webkit-print-color-adjust: exact; 
-            }
-            
-            .sort-icon { display: none !important; }
-            .badge { border: none !important; background: transparent !important; color: black !important; padding: 0 !important; font-weight: normal !important; }
-        }
-    </style>
+    #printArea table { width: 100%; border-collapse: collapse; font-size: 11pt; margin-top: 10px; page-break-inside: auto; }
+    #printArea th, #printArea td { border: 1px solid #000; padding: 6px 8px; text-align: left; }
+    #printArea th { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    
+    #printArea .header-table { border: none; border-bottom: 2px solid #000; margin-bottom: 15px; padding-bottom: 10px; }
+    #printArea .header-table td { border: none; padding: 4px; }
+    
+    #printArea thead { display: table-header-group; }
+    #printArea tfoot { display: table-footer-group; }
+    #printArea tr { page-break-inside: avoid; break-inside: avoid; }
+    
+    @page { margin: 15mm; }
+  }
+</style>
 </head>
-<body class="text-slate-800 h-screen overflow-hidden flex print-container">
+<body>
 
-    <!-- Sidebar Navigation -->
-    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col h-full transition-all duration-300 no-print sidebar hidden md:flex z-20 shrink-0">
-        <div class="h-16 flex items-center px-6 font-bold text-xl text-white tracking-wider border-b border-slate-800 bg-slate-950 shadow-sm">
-            <i class="fa-solid fa-graduation-cap text-indigo-500 mr-3"></i> EduAdmin
-        </div>
-        <nav class="flex-1 overflow-y-auto py-4">
-            <ul class="space-y-1">
-                <li>
-                    <a href="#" class="flex items-center px-6 py-3 bg-indigo-600/10 text-indigo-400 border-r-4 border-indigo-500 hover:bg-slate-800 transition">
-                        <i class="fa-solid fa-chart-pie w-6"></i> Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center px-6 py-3 hover:bg-slate-800 hover:text-white transition">
-                        <i class="fa-solid fa-school w-6"></i> School Directory
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </aside>
-
-    <main class="flex-1 flex flex-col h-screen overflow-hidden main-content bg-slate-50 relative w-full">
-        
-        <!-- Topbar -->
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 no-print topbar z-10 shadow-sm shrink-0">
-            <div class="flex items-center">
-                <h2 class="text-lg font-semibold text-slate-800 hidden sm:block">अंबाजोगाई: शाळांची गटवार यादी</h2>
-                <h2 class="text-lg font-semibold text-slate-800 sm:hidden">EduAdmin</h2>
-            </div>
-            <div class="flex items-center space-x-4">
-                <div class="relative hidden sm:block">
-                    <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="Search schools..." class="pl-10 pr-4 py-2 border border-slate-300 rounded-full text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-64 bg-slate-50 transition-all">
-                </div>
-            </div>
-        </header>
-
-        <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
-            
-            <!-- Dashboard Stats Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 no-print">
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center justify-between transition hover:shadow-md">
-                    <div>
-                        <p class="text-sm font-medium text-slate-500">Total Schools</p>
-                        <p class="text-2xl font-bold text-slate-800 mt-1" id="statTotal">0</p>
-                    </div>
-                    <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 text-xl">
-                        <i class="fa-solid fa-building-columns"></i>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center justify-between transition hover:shadow-md">
-                    <div>
-                        <p class="text-sm font-medium text-slate-500">Zilla Parishad (ZP)</p>
-                        <p class="text-2xl font-bold text-slate-800 mt-1" id="statZp">0</p>
-                    </div>
-                    <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 text-xl">
-                        <i class="fa-solid fa-map-location-dot"></i>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center justify-between transition hover:shadow-md">
-                    <div>
-                        <p class="text-sm font-medium text-slate-500">Private / Self Finance</p>
-                        <p class="text-2xl font-bold text-slate-800 mt-1" id="statPvt">0</p>
-                    </div>
-                    <div class="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 text-xl">
-                        <i class="fa-solid fa-landmark-flag"></i>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center justify-between transition hover:shadow-md">
-                    <div>
-                        <p class="text-sm font-medium text-slate-500">Custom Columns</p>
-                        <p class="text-2xl font-bold text-slate-800 mt-1" id="statCols">0</p>
-                    </div>
-                    <div class="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 text-xl">
-                        <i class="fa-solid fa-table-columns"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Toolbar Controls -->
-            <div class="bg-white p-4 rounded-t-xl border-b border-slate-200 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 no-print shadow-sm">
-                <div class="flex items-center w-full xl:w-auto">
-                    <div class="relative w-full xl:w-80">
-                        <i class="fa-solid fa-link absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="gasUrl" placeholder="Paste Google Script Web App URL..." class="pl-9 pr-4 py-2 border border-slate-300 text-sm rounded-l-lg w-full outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-slate-50">
-                    </div>
-                    <button id="syncBtn" onclick="syncToGoogleSheets()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-r-lg shadow-sm transition flex items-center whitespace-nowrap text-sm font-medium border border-slate-800">
-                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Sync
-                    </button>
-                </div>
-                
-                <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
-                    <button onclick="promptAddColumn()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg shadow-sm transition flex items-center text-sm font-medium">
-                        <i class="fa-solid fa-plus text-indigo-500 mr-2"></i> Add Column
-                    </button>
-                    <button onclick="openModal(-1)" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-sm transition flex items-center text-sm font-medium">
-                        <i class="fa-solid fa-school mr-2"></i> Add School
-                    </button>
-                    <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow-sm transition flex items-center text-sm font-medium">
-                        <i class="fa-solid fa-file-pdf mr-2"></i> Export PDF
-                    </button>
-                </div>
-            </div>
-
-            <!-- Data Table Container -->
-            <div class="bg-white rounded-b-xl shadow-sm border border-slate-200 border-t-0 overflow-hidden flex flex-col" style="max-height: calc(100vh - 340px); min-height: 400px;">
-                <div class="overflow-auto flex-1 relative">
-                    <table class="min-w-full divide-y divide-slate-200 text-sm w-full">
-                        <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm" id="tableHeadRow">
-                            <!-- Headers dynamically generated -->
-                        </thead>
-                        <tbody id="tableBody" class="divide-y divide-slate-100 bg-white">
-                            <!-- Rows dynamically generated -->
-                        </tbody>
-                    </table>
-                    
-                    <!-- Empty State -->
-                    <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-slate-500 absolute inset-0 bg-white z-0">
-                        <i class="fa-solid fa-folder-open text-5xl mb-4 text-slate-300"></i>
-                        <p class="text-lg font-semibold text-slate-700">No schools found</p>
-                        <p class="text-sm mt-1">Try adjusting your search query or add a new school.</p>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- School Add/Edit Modal -->
-    <div id="schoolModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center no-print z-50 transition-opacity p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto transform transition-all">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-5">
-                <h2 id="modalTitle" class="text-xl font-bold text-slate-800 flex items-center">
-                    <i class="fa-solid fa-pen-to-square text-indigo-500 mr-2"></i> <span>School Details</span>
-                </h2>
-                <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-            </div>
-            
-            <form id="schoolForm" class="space-y-5">
-                <input type="hidden" id="editIndex" value="-1">
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">UDISE Code <span class="text-red-500">*</span></label>
-                        <input type="text" id="udise" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Management Type <span class="text-red-500">*</span></label>
-                        <select id="management" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
-                            <option value="" disabled selected>Select Management Type</option>
-                            <option value="1-ZP">1-ZP</option>
-                            <option value="2-Private Aided">2-Private Aided</option>
-                            <option value="3-Unaided">3-Unaided</option>
-                            <option value="4-Self Finance">4-Self Finance</option>
-                            <option value="0-GOVT">0-GOVT</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">School Name <span class="text-red-500">*</span></label>
-                    <input type="text" id="schoolName" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Category (Classes) <span class="text-red-500">*</span></label>
-                    <input type="text" id="classes" placeholder="e.g., इयत्ता १ ते ४ (Class 1 to 4)" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">HM Name (Principal)</label>
-                        <input type="text" id="principal" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">HM Contact Number</label>
-                        <input type="text" id="mobile" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
-                    </div>
-                </div>
-
-                <div id="customFieldsContainer" class="border-t border-slate-100 pt-5 grid grid-cols-1 md:grid-cols-2 gap-5 hidden"></div>
-
-                <div class="flex justify-end space-x-3 pt-6 border-t border-slate-100">
-                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-lg transition">Cancel</button>
-                    <!-- Trigger PIN flow on save -->
-                    <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md transition flex items-center">
-                        <i class="fa-solid fa-lock mr-2 text-indigo-200"></i> Save Details
-                    </button>
-                </div>
-            </form>
-        </div>
+<div class="letterhead">
+  <div class="letterhead-inner">
+    <div class="lh-title-block">
+      <div class="seal">श</div>
+      <div class="lh-text">
+        <h1 id="headerTitle">रविवार पेठ — शिक्षक नोंदवही</h1>
+        <p id="headerSub">Cluster Teacher Register</p>
+      </div>
     </div>
+    <div class="lh-actions" id="adminArea"></div>
+  </div>
+</div>
 
-    <!-- Custom PIN Auth Modal -->
-    <div id="pinModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center no-print z-[70]">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center transform transition-all mx-4">
-            <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500 text-2xl">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">Admin Authentication</h3>
-            <p class="text-sm text-slate-500 mb-6">Enter secure PIN to confirm changes. (Hint: 1234)</p>
-            
-            <input type="password" id="pinInput" placeholder="••••" maxlength="4" class="w-full text-center tracking-[0.5em] text-3xl font-bold border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition mb-6 bg-slate-50">
-            
-            <div class="flex space-x-3">
-                <button onclick="closePinModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition">Cancel</button>
-                <button onclick="submitPin()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md transition">Confirm</button>
-            </div>
+<div class="tabbar">
+  <div class="tabbar-inner" id="tabbarInner">
+    <button class="tab-btn active" data-tab="dashboard">विहंगावलोकन</button>
+    <button class="tab-btn" data-tab="teachers">शिक्षक यादी</button>
+    <button class="tab-btn" data-tab="schools">शाळानिहाय</button>
+  </div>
+</div>
+
+<div class="wrap" id="app"></div>
+
+<footer class="foot">डेटा हा या ब्राउझरमध्ये सुरक्षित आहे. काही त्रुटी आढळल्यास पेज रिफ्रेश करा.</footer>
+
+<div id="modalRoot"></div>
+<div id="toastRoot" class="toast"></div>
+
+<!-- Native Print Area Container -->
+<div id="printArea"></div>
+
+<script>
+/* =========================================================
+   DATA & CONFIG
+   ========================================================= */
+const SEED_DATA = [{"id":"t1","brc":"AMBAJOGAI","school":"ALLAM SIDDIQUE AL. URDU HS PIMPALA DHAIGUDA","udise":"27270103202","teacher":"SAYED F H","status":"Active","custom":{}},{"id":"t2","brc":"AMBAJOGAI","school":"ALLAM SIDDIQUE AL. URDU HS PIMPALA DHAIGUDA","udise":"27270103202","teacher":"SHAIKH A K","status":"Active","custom":{}},{"id":"t3","brc":"AMBAJOGAI","school":"ALLAM SIDDIQUE AL. URDU HS PIMPALA DHAIGUDA","udise":"27270103202","teacher":"SHAIKH I K","status":"Active","custom":{}}]; 
+
+// Added Metadata map based on PDF data (UDISE -> Meta)
+const SCHOOL_META = {
+  "27270101613": { mgt: "1-ZP", hm: "बळीराम शिवदास आकुसकर", phone: "9011999904", cls: "Class 1 to 4" },
+  "27270101620": { mgt: "2-Private Aided", hm: "SHAIKH JAMEEL NAWAB", phone: "9960454571", cls: "Class 1 to 4" },
+  "27270101695": { mgt: "4-Self Finance", hm: "Thorat G P", phone: "8329811192", cls: "Class 1 to 4" },
+  "27270102401": { mgt: "1-ZP", hm: "अंगद कोंडीबा घुले", phone: "9822373937", cls: "Class 1 to 4" },
+  "27270102503": { mgt: "1-ZP", hm: "वंदना तुकाराम उजगरे", phone: "9552983384", cls: "Class 1 to 4" },
+  "27270102601": { mgt: "1-ZP", hm: "संजय हणमंतराव कचकलवार", phone: "9284746414", cls: "Class 1 to 4" },
+  "27270102801": { mgt: "1-ZP", hm: "संजय ज्ञानोबा पाडोळे", phone: "7020929833", cls: "Class 1 to 4" },
+  "27270103001": { mgt: "1-ZP", hm: "बालासाहेब व्यंकटराव कातळे", phone: "8999022483", cls: "Class 1 to 4" },
+  "27270103002": { mgt: "3-Unaided", hm: "KARAD RAMRAJE NARAYAN", phone: "9730035874", cls: "Class 1 to 5" },
+  "27270103102": { mgt: "1-ZP", hm: "अनिता सदाशिव नखाते", phone: "9403356595", cls: "Class 1 to 5" },
+  "27270103301": { mgt: "1-ZP", hm: "ज्योतीबाई देवीदासराव शिंदे", phone: "9403645467", cls: "Class 1 to 5" },
+  "27270103303": { mgt: "1-ZP", hm: "शोभा अंगदराव चाटे", phone: "8999768368", cls: "Class 1 to 5" },
+  "27270103401": { mgt: "1-ZP", hm: "मनीषा धोंडोपंत चिंचोलीकर", phone: "9420194266", cls: "Class 1 to 5" },
+  "27270103701": { mgt: "1-ZP", hm: "सुनिल आनंदराव फुलेवार", phone: "9423733945", cls: "Class 1 to 5" },
+  "27270100109": { mgt: "4-Self Finance", hm: "Pratibha Ankush Shinde", phone: "9975791303", cls: "Class 1 to 5" },
+  "27270101688": { mgt: "4-Self Finance", hm: "Gangane Shashikala Nagorao", phone: "8788801400", cls: "Class 1 to 5" },
+  "27270102501": { mgt: "1-ZP", hm: "उत्तम बाबुराव डोंगरे", phone: "9689008389", cls: "Class 1 to 5" },
+  "27270102502": { mgt: "1-ZP", hm: "मंजुषा भीमाशंकर जिडगे", phone: "9561941714", cls: "Class 1 to 5" },
+  "27270102901": { mgt: "1-ZP", hm: "राजेसाहेब वैजनाथराव सोमवंशी", phone: "7020708970", cls: "Class 1 to 5" },
+  "27270103502": { mgt: "1-ZP", hm: "शालन नागनाथ जोगदंड", phone: "9763233793", cls: "Class 1 to 5" },
+  "27270102405": { mgt: "4-Self Finance", hm: "उपलब्ध नाही", phone: "उपलब्ध नाही", cls: "Class 1 to 7" },
+  "27270101612": { mgt: "1-ZP", hm: "इंद्रजित शिवाजीराव डांगे", phone: "9403023319", cls: "Class 1 to 7" },
+  "27270101618": { mgt: "2-Private Aided", hm: "KHANDERAO BHAGWANRAO NANDGAONKAR", phone: "9881638496", cls: "Class 1 to 7" },
+  "27270101619": { mgt: "2-Private Aided", hm: "Magar RB", phone: "9421946215", cls: "Class 1 to 7" },
+  "27270101626": { mgt: "2-Private Aided", hm: "Shivaji Angad Hendge", phone: "9421375441", cls: "Class 1 to 7" },
+  "27270101628": { mgt: "2-Private Aided", hm: "Qureshi Mohammed Ilyasuddin Salimuddin", phone: "9422742930", cls: "Class 1 to 7" },
+  "27270101629": { mgt: "4-Self Finance", hm: "Mr Bhasme Mahesh Marutirao", phone: "9403645496", cls: "Class 1 to 7" },
+  "27270101633": { mgt: "2-Private Aided", hm: "SOLANKE SANDHYA UTTAMRAO", phone: "8830773269", cls: "Class 1 to 7" },
+  "27270101660": { mgt: "2-Private Aided", hm: "Chaudhari SG", phone: "8805044747", cls: "Class 1 to 7" },
+  "27270102701": { mgt: "1-ZP", hm: "बापूराव राघुआप्पा धारेकर", phone: "7020752753", cls: "Class 1 to 7" },
+  "27270103101": { mgt: "1-ZP", hm: "शैलजा उत्तमराव जोशी", phone: "9403882075", cls: "Class 1 to 7" },
+  "27270103201": { mgt: "1-ZP", hm: "संजीव कचरू उमाप", phone: "9284023434", cls: "Class 1 to 7" },
+  "27270103203": { mgt: "1-ZP", hm: "सय्यदा हिना सय्यद सरफराजोद्दीन", phone: "8600504215", cls: "Class 1 to 7" },
+  "27270103501": { mgt: "1-ZP", hm: "आनंद पांडुरंग सिरसाट", phone: "9850940078", cls: "Class 1 to 7" },
+  "27270105504": { mgt: "2-Private Aided", hm: "Pathan Sartaj Khan Razzak Khan", phone: "9767116668", cls: "Class 1 to 7" },
+  "27270100105": { mgt: "4-Self Finance", hm: "Londhal DA", phone: "9405247008", cls: "Class 1 to 8" },
+  "27270101623": { mgt: "2-Private Aided", hm: "FAIZ MOOSA SAYYED", phone: "9028891469", cls: "Class 1 to 8" },
+  "27270101685": { mgt: "4-Self Finance", hm: "Bade Rekha Subhash", phone: "9404121272", cls: "Class 1 to 8" },
+  "27270102404": { mgt: "1-ZP", hm: "आरिफ अहमद अब्दुल रशीद शेख", phone: "9405292799", cls: "Class 1 to 8" },
+  "27270103802": { mgt: "2-Private Aided", hm: "Gangane Anant Satwaram", phone: "9421913422", cls: "Class 1 to 8" },
+  "27270103803": { mgt: "4-Self Finance", hm: "Apet S B", phone: "9422773141", cls: "Class 1 to 8" },
+  "27270101669": { mgt: "4-Self Finance", hm: "Dr Yogesh Subhashrao Kulkarni", phone: "9422745733", cls: "Class 1 to 10" },
+  "27270103801": { mgt: "1-ZP", hm: "Ravindra Deogaonkar", phone: "9405662166", cls: "Class 1 to 10" },
+  "27270100107": { mgt: "4-Self Finance", hm: "Shinde BV", phone: "9422773141", cls: "Class 1 to 12" },
+  "27270100110": { mgt: "4-Self Finance", hm: "Shaikh Ayesha Kirmani Naseer", phone: "9403881891", cls: "Class 1 to 12" },
+  "27270100111": { mgt: "4-Self Finance", hm: "PATHAN ARSHAD", phone: "8380921212", cls: "Class 1 to 12" },
+  "27270101654": { mgt: "4-Self Finance", hm: "M Prashant Kumar", phone: "9665746911", cls: "Class 1 to 12" },
+  "27270101690": { mgt: "4-Self Finance", hm: "Deshmukh Matin Ghulamrasoolatin", phone: "9730668387", cls: "Class 1 to 12" },
+  "27270103003": { mgt: "4-Self Finance", hm: "RAUT SS", phone: "9730035872", cls: "Class 1 to 12" },
+  "27270103702": { mgt: "4-Self Finance", hm: "उपलब्ध नाही", phone: "उपलब्ध नाही", cls: "Class 1 to 12" },
+  "27270101615": { mgt: "2-Private Aided", hm: "Awad Sunil Premraj", phone: "9422931408", cls: "Class 5 to 10" },
+  "27270101635": { mgt: "2-Private Aided", hm: "Shrimati PATHAK APARNA RAOSAHEB", phone: "9403927545", cls: "Class 5 to 10" },
+  "27270101636": { mgt: "2-Private Aided", hm: "MEENA SURESH KULKARNI", phone: "8459332551", cls: "Class 5 to 10" },
+  "27270101639": { mgt: "2-Private Aided", hm: "Shinde Satish Bhagvat", phone: "9421344616", cls: "Class 5 to 10" },
+  "27270101643": { mgt: "2-Private Aided", hm: "Anantram sundarrao Kople", phone: "9403571582", cls: "Class 5 to 10" },
+  "27270101648": { mgt: "3-Unaided", hm: "KARAD RAMRAJE NARAYAN", phone: "9730035874", cls: "Class 5 to 10" },
+  "27270102402": { mgt: "2-Private Aided", hm: "Tambade GS", phone: "7709196103", cls: "Class 5 to 10" },
+  "27270102702": { mgt: "2-Private Aided", hm: "Shri Jadhav Rajendra Ramkaran", phone: "9028987610", cls: "Class 5 to 10" },
+  "27270103202": { mgt: "2-Private Aided", hm: "Shaikh Nabee Babamiya", phone: "9850646724", cls: "Class 5 to 10" },
+  "27270103302": { mgt: "2-Private Aided", hm: "MUNDE SS", phone: "9421277292", cls: "Class 5 to 10" },
+  "27270101614": { mgt: "2-Private Aided", hm: "Munje VA", phone: "9421341688", cls: "Class 5 to 12" },
+  "27270101640": { mgt: "2-Private Aided", hm: "MOHAMMAD IRSHAD AHMED", phone: "9284931302", cls: "Class 5 to 12" },
+  "27270101661": { mgt: "2-Private Aided", hm: "Shri KAKADES B", phone: "8805044747", cls: "Class 5 to 12" },
+  "27270101305": { mgt: "4-Self Finance", hm: "Gangane Shashikala Nagorao", phone: "8788801400", cls: "Class 6 to 12" },
+  "27270101647": { mgt: "2-Private Aided", hm: "SAYYED MERAJ AHMAD MOOSA", phone: "9822283894", cls: "Class 8 to 10" },
+  "27270101649": { mgt: "2-Private Aided", hm: "Annasaheb Mukundrao Hulge", phone: "9767801101", cls: "Class 8 to 10" },
+  "27270101653": { mgt: "4-Self Finance", hm: "BHASME MM", phone: "9890038251", cls: "Class 8 to 10" }
+};
+
+const STATUS_OPTS = ["उपस्थित", "गैरहजर", "किरकोळ रजा", "अर्जित रजा", "वैद्यकीय रजा", "इतर"];
+const STATUS_LABEL_MR = {
+  "उपस्थित":"उपस्थित",
+  "गैरहजर":"गैरहजर",
+  "किरकोळ रजा":"किरकोळ रजा",
+  "अर्जित रजा":"अर्जित रजा",
+  "वैद्यकीय रजा":"वैद्यकीय रजा",
+  "इतर":"इतर"
+};
+const STATUS_COLOR = {
+  "उपस्थित":"var(--green)",
+  "गैरहजर":"var(--red)",
+  "किरकोळ रजा":"var(--amber)",
+  "अर्जित रजा":"#3B6EA5",
+  "वैद्यकीय रजा":"#8E44AD",
+  "इतर":"#7f8c8d"
+};
+
+let DB = [];              
+let isAdmin = false;
+let hiddenSchools = [];
+let headerSettings = {
+  title: "रविवार पेठ — शिक्षक नोंदवही",
+  sub: "Cluster Teacher Register",
+  venue: "",
+  date: ""
+};
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzGYiFsV-ee7CpNG1uEj9PEQzKuw9W3-BXRBrlm49CKwiFjFbhAdFPqMlXBqHz82RU/exec";
+let sheetSync = { connected:false, lastSync:null, busy:false };
+
+function normalizeRecord(r){
+  let st = r.status;
+  if(st === 'Active') st = 'उपस्थित';
+  if(!STATUS_OPTS.includes(st)) st = 'उपस्थित';
+
+  return {
+    id: r.id || uid(),
+    brc: r.brc || '',
+    school: r.school || '',
+    udise: (r.udise!==undefined && r.udise!==null) ? String(r.udise) : '',
+    teacher: r.teacher || '',
+    status: st,
+    custom: (r.custom && typeof r.custom === 'object') ? r.custom : {}
+  };
+}
+
+/* =========================================================
+   STORAGE (LocalStorage)
+   ========================================================= */
+async function loadDB(){
+  try{
+    const res = localStorage.getItem('teachers-db');
+    if(res) DB = JSON.parse(res);
+  }catch(e){ console.error(e); }
+  
+  if(!DB || !DB.length) DB = SEED_DATA.map(r => normalizeRecord(r));
+  else DB = DB.map(r => normalizeRecord(r)); 
+
+  try {
+    const hs = localStorage.getItem('hidden-schools');
+    if(hs) hiddenSchools = JSON.parse(hs);
+    
+    const hSet = localStorage.getItem('header-settings');
+    if(hSet) headerSettings = JSON.parse(hSet);
+  } catch(e){}
+
+  renderHeaderText();
+
+  try{
+    const res = await fetch(SCRIPT_URL + '?action=list');
+    const json = await res.json();
+    if(json.ok && json.data && json.data.length){
+      DB = json.data.map(normalizeRecord);
+      await saveDB();
+    }
+    sheetSync.connected = true;
+    sheetSync.lastSync = new Date();
+  }catch(e){
+    sheetSync.connected = false;
+  }
+}
+
+async function saveDB(){
+  try{
+    localStorage.setItem('teachers-db', JSON.stringify(DB));
+  }catch(e){
+    showToast('जतन करताना त्रुटी आली');
+  }
+}
+
+async function getAdminPassword(){ return localStorage.getItem('admin-password'); }
+async function setAdminPassword(pw){ localStorage.setItem('admin-password', pw); }
+function saveHeaderSettings(s){
+  headerSettings = s;
+  localStorage.setItem('header-settings', JSON.stringify(s));
+  renderHeaderText();
+}
+function renderHeaderText(){
+  document.getElementById('headerTitle').textContent = headerSettings.title;
+  let subText = headerSettings.sub;
+  if(headerSettings.venue) subText += " | " + headerSettings.venue;
+  if(headerSettings.date) subText += " | " + headerSettings.date;
+  document.getElementById('headerSub').textContent = subText;
+}
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+function uid(){ return 't'+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function esc(s){ return (s===undefined||s===null)?'':String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function showToast(msg){
+  const t = document.getElementById('toastRoot');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._h);
+  showToast._h = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+function badgeClass(status){
+  if(status==='उपस्थित') return 'badge-green';
+  if(status==='गैरहजर') return 'badge-red';
+  if(status==='किरकोळ रजा') return 'badge-amber';
+  if(status==='अर्जित रजा') return 'badge-blue';
+  if(status==='वैद्यकीय रजा') return 'badge-purple';
+  if(status==='इतर') return 'badge-gray';
+  return 'badge-amber';
+}
+function statusLabel(status){ return STATUS_LABEL_MR[status] || status || '—'; }
+
+function uniqueSchools(){
+  const map = new Map();
+  DB.forEach(r=>{
+    const key = r.school+'||'+r.udise;
+    if(!map.has(key)) map.set(key, {school:r.school, udise:r.udise, brc:r.brc, teachers:[]});
+    map.get(key).teachers.push(r);
+  });
+  
+  let schoolsArr = Array.from(map.values())
+    .filter(s => isAdmin || !hiddenSchools.includes(s.school+'||'+s.udise));
+    
+  // Inject Metadata
+  schoolsArr.forEach(s => {
+    const meta = SCHOOL_META[s.udise] || {};
+    s.mgt = meta.mgt || 'इतर (Other)';
+    s.hm = meta.hm || 'उपलब्ध नाही';
+    s.phone = meta.phone || '-';
+    s.cls = meta.cls || '-';
+  });
+
+  return schoolsArr;
+}
+
+function allBrcs(){ return Array.from(new Set(DB.map(r=>r.brc).filter(Boolean))).sort(); }
+function customKeysFor(list){
+  const keys = new Set();
+  list.forEach(r=>{ if(r.custom) Object.keys(r.custom).forEach(k=>keys.add(k)); });
+  return Array.from(keys);
+}
+
+// Get dynamically sorted lists for dropdowns
+function getDropdownLists(){
+  const allM = new Set();
+  const allC = new Set();
+  Object.values(SCHOOL_META).forEach(m => {
+    if(m.mgt) allM.add(m.mgt);
+    if(m.cls) allC.add(m.cls);
+  });
+  return { mgtList: Array.from(allM).sort(), clsList: Array.from(allC).sort() };
+}
+
+/* =========================================================
+   RENDER: ADMIN AREA
+   ========================================================= */
+function renderAdminArea(){
+  const el = document.getElementById('adminArea');
+  if(isAdmin){
+    el.innerHTML = `
+      <div class="admin-pill"><span class="dot"></span> प्रशासक मोड</div>
+      <button class="btn btn-outline-light btn-sm" id="btnEditHeader">शीर्षक बदल</button>
+      <button class="btn btn-outline-light btn-sm" id="btnLogout">बाहेर पडा</button>
+    `;
+    document.getElementById('btnLogout').onclick = ()=>{ isAdmin=false; renderAdminArea(); render(); showToast('लॉगआउट झाले'); };
+    document.getElementById('btnEditHeader').onclick = openHeaderModal;
+  }else{
+    el.innerHTML = `<button class="btn btn-gold" id="btnLogin">प्रशासक लॉगिन</button>`;
+    document.getElementById('btnLogin').onclick = openLoginModal;
+  }
+}
+
+/* =========================================================
+   MODALS
+   ========================================================= */
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+
+function openHeaderModal(){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="overlay" id="ov">
+      <div class="modal">
+        <div class="modal-head"><h3>शीर्षक संपादित करा</h3><button class="modal-close" id="mc">×</button></div>
+        <div class="modal-body">
+          <div class="field"><label>मुख्य शीर्षक</label><input class="input" id="hTitle" value="${esc(headerSettings.title)}"></div>
+          <div class="field"><label>उपशीर्षक</label><input class="input" id="hSub" value="${esc(headerSettings.sub)}"></div>
+          <div class="field-row">
+             <div class="field"><label>स्थळ (उदा. केंद्र)</label><input class="input" id="hVenue" value="${esc(headerSettings.venue)}"></div>
+             <div class="field"><label>दिनांक</label><input type="date" class="input" id="hDate" value="${esc(headerSettings.date)}"></div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" id="cancel">रद्द करा</button>
+            <button class="btn btn-maroon" id="saveHeader">जतन करा</button>
+          </div>
         </div>
+      </div>
+    </div>`;
+  bindClose(['ov','mc','cancel']);
+  document.getElementById('saveHeader').onclick = ()=>{
+    saveHeaderSettings({
+      title: document.getElementById('hTitle').value.trim(),
+      sub: document.getElementById('hSub').value.trim(),
+      venue: document.getElementById('hVenue').value.trim(),
+      date: document.getElementById('hDate').value.trim(),
+    });
+    closeModal();
+    showToast('शीर्षक बदलले');
+  };
+}
+
+async function openLoginModal(){
+  const existing = await getAdminPassword();
+  const root = document.getElementById('modalRoot');
+  if(!existing){
+    root.innerHTML = `
+    <div class="overlay" id="ov">
+      <div class="modal">
+        <div class="modal-head"><h3>प्रशासक पासवर्ड तयार करा</h3><button class="modal-close" id="mc">×</button></div>
+        <div class="modal-body">
+          <p class="helptext">या डिव्हाइसवर अद्याप प्रशासक पासवर्ड नाही. संपादन आणि प्रिंट करण्यासाठी एक पासवर्ड तयार करा.</p>
+          <div class="field"><label>नवीन पासवर्ड</label><input type="password" class="input" id="pw1"></div>
+          <div class="field"><label>पासवर्ड पुन्हा टाका</label><input type="password" class="input" id="pw2"></div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" id="cancel">रद्द करा</button>
+            <button class="btn btn-maroon" id="save">पासवर्ड तयार करा</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    bindClose(['ov','mc','cancel']);
+    document.getElementById('save').onclick = async ()=>{
+      const p1=document.getElementById('pw1').value, p2=document.getElementById('pw2').value;
+      if(!p1 || p1.length<4){ showToast('किमान ४ अक्षरांचा पासवर्ड द्या'); return; }
+      if(p1!==p2){ showToast('पासवर्ड जुळत नाहीत'); return; }
+      await setAdminPassword(p1);
+      isAdmin=true; closeModal(); renderAdminArea(); render();
+      showToast('पासवर्ड तयार झाला. आपण आता प्रशासक आहात.');
+    };
+  }else{
+    root.innerHTML = `
+    <div class="overlay" id="ov">
+      <div class="modal">
+        <div class="modal-head"><h3>प्रशासक लॉगिन</h3><button class="modal-close" id="mc">×</button></div>
+        <div class="modal-body">
+          <div class="field"><label>पासवर्ड</label><input type="password" class="input" id="pw" autofocus></div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" id="forgot">पासवर्ड विसरलात?</button>
+            <div class="spacer"></div>
+            <button class="btn btn-ghost" id="cancel">रद्द करा</button>
+            <button class="btn btn-maroon" id="loginBtn">लॉगिन</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    bindClose(['ov','mc','cancel']);
+    const doLogin = async ()=>{
+      const p = document.getElementById('pw').value;
+      const real = await getAdminPassword();
+      if(p===real){ isAdmin=true; closeModal(); renderAdminArea(); render(); showToast('लॉगिन यशस्वी'); }
+      else showToast('चुकीचा पासवर्ड');
+    };
+    document.getElementById('loginBtn').onclick = doLogin;
+    document.getElementById('pw').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+    document.getElementById('forgot').onclick = openResetModal;
+  }
+}
+
+function openResetModal(){
+  const root = document.getElementById('modalRoot');
+  root.innerHTML = `
+    <div class="overlay" id="ov">
+      <div class="modal">
+        <div class="modal-head"><h3>पासवर्ड रीसेट करा</h3><button class="modal-close" id="mc">×</button></div>
+        <div class="modal-body">
+          <p class="helptext">सुरक्षिततेसाठी, पासवर्ड रीसेट करण्याकरिता खालील बॉक्समध्ये मोठ्या अक्षरात <b>RESET</b> टाइप करा व नवीन पासवर्ड सेट करा.</p>
+          <div class="field"><label>पुष्टीकरण शब्द</label><input class="input" id="confirmWord" placeholder="RESET"></div>
+          <div class="field"><label>नवीन पासवर्ड</label><input type="password" class="input" id="npw1"></div>
+          <div class="field"><label>नवीन पासवर्ड पुन्हा टाका</label><input type="password" class="input" id="npw2"></div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" id="cancel">रद्द करा</button>
+            <button class="btn btn-maroon" id="doReset">रीसेट करा</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  bindClose(['ov','mc','cancel']);
+  document.getElementById('doReset').onclick = async ()=>{
+    if(document.getElementById('confirmWord').value.trim()!=='RESET'){ showToast('कृपया RESET असे टाइप करा'); return; }
+    const p1=document.getElementById('npw1').value, p2=document.getElementById('npw2').value;
+    if(!p1||p1.length<4){ showToast('किमान ४ अक्षरांचा पासवर्ड द्या'); return; }
+    if(p1!==p2){ showToast('पासवर्ड जुळत नाहीत'); return; }
+    await setAdminPassword(p1);
+    isAdmin=true; closeModal(); renderAdminArea(); render();
+    showToast('पासवर्ड रीसेट झाला. आपण लॉगिन आहात.');
+  };
+}
+
+function openTeacherForm(record){
+  const isEdit = !!record;
+  const r = record || {id:null, brc:(allBrcs()[0]||''), school:'', udise:'', teacher:'', status:'उपस्थित', custom:{}};
+  const root = document.getElementById('modalRoot');
+  const customEntries = Object.entries(r.custom||{});
+  root.innerHTML = `
+    <div class="overlay" id="ov">
+      <div class="modal">
+        <div class="modal-head"><h3>${isEdit? 'शिक्षक माहिती संपादित करा':'नवीन शिक्षक जोडा'}</h3><button class="modal-close" id="mc">×</button></div>
+        <div class="modal-body">
+          <div class="field-row">
+            <div class="field"><label>BRC / तालुका</label><input class="input" id="f_brc" value="${esc(r.brc)}"></div>
+            <div class="field"><label>UDISE क्रमांक</label><input class="input" id="f_udise" value="${esc(r.udise)}"></div>
+          </div>
+          <div class="field"><label>शाळेचे नाव</label><input class="input" id="f_school" value="${esc(r.school)}"></div>
+          <div class="field"><label>शिक्षकाचे नाव</label><input class="input" id="f_teacher" value="${esc(r.teacher)}"></div>
+          <div class="field"><label>स्थिती</label>
+            <select class="input" id="f_status">
+              ${STATUS_OPTS.map(s=>`<option value="${s}" ${s===r.status?'selected':''}>${statusLabel(s)}</option>`).join('')}
+            </select>
+          </div>
+          <hr class="divider">
+          <label style="font-size:12.5px;font-weight:600;color:var(--ink-soft);">अतिरिक्त तपशील (पर्यायी)</label>
+          <div id="customRows">
+            ${customEntries.map(([k,v])=>customRowHtml(k,v)).join('')}
+          </div>
+          <button class="btn btn-ghost btn-sm" id="addCustomRow">+ क्षेत्र जोडा</button>
+          <div class="modal-actions" style="margin-top:20px;">
+            <button class="btn btn-ghost" id="cancel">रद्द करा</button>
+            ${isEdit? `<button class="btn btn-danger" id="delBtn">नोंद काढून टाका</button>`:''}
+            <button class="btn btn-maroon" id="saveBtn">जतन करा</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  bindClose(['ov','mc','cancel']);
+  document.getElementById('addCustomRow').onclick = ()=>{
+    document.getElementById('customRows').insertAdjacentHTML('beforeend', customRowHtml('',''));
+  };
+  document.getElementById('customRows').addEventListener('click', (e)=>{
+    if(e.target.classList.contains('rm-row')) e.target.closest('.custom-row').remove();
+  });
+  
+  if(isEdit){
+    document.getElementById('delBtn').onclick = async ()=>{
+      if(!confirm('ही नोंद कायमची डिलीट करायची মিলিটারি आहे का?')) return;
+      DB = DB.filter(x=>x.id!==r.id);
+      await saveDB(); closeModal(); render(); showToast('नोंद यशस्वीरित्या काढली');
+      try{ 
+        await fetch(SCRIPT_URL, {method:'POST', body: JSON.stringify({action:'delete', id:r.id})}); 
+      } catch(e){}
+    };
+  }
+  
+  document.getElementById('saveBtn').onclick = async ()=>{
+    const brc = document.getElementById('f_brc').value.trim();
+    const udise = document.getElementById('f_udise').value.trim();
+    const school = document.getElementById('f_school').value.trim();
+    const teacher = document.getElementById('f_teacher').value.trim();
+    const status = document.getElementById('f_status').value;
+    if(!school || !teacher){ showToast('शाळेचे नाव व शिक्षकाचे नाव आवश्यक आहे'); return; }
+    
+    const custom = {};
+    document.querySelectorAll('#customRows .custom-row').forEach(row=>{
+      const k = row.querySelector('.ck').value.trim();
+      const v = row.querySelector('.cv').value.trim();
+      if(k) custom[k]=v;
+    });
+    
+    let rec;
+    if(isEdit){
+      const idx = DB.findIndex(x=>x.id===r.id);
+      DB[idx] = {...DB[idx], brc,udise,school,teacher,status,custom};
+      rec = DB[idx];
+    }else{
+      rec = {id:uid(), brc,udise,school,teacher,status,custom};
+      DB.push(rec);
+    }
+    
+    await saveDB(); closeModal(); render();
+    showToast(isEdit? 'माहिती अद्ययावत झाली':'नवीन शिक्षक जोडला');
+    try{ 
+      await fetch(SCRIPT_URL, {method:'POST', body: JSON.stringify({action:'upsert', record:rec})}); 
+    }catch(e){}
+  };
+}
+
+function customRowHtml(k,v){
+  return `<div class="custom-row">
+    <input class="input ck" placeholder="क्षेत्राचे नाव (उदा. मोबाईल)" value="${esc(k)}">
+    <input class="input cv" placeholder="माहिती" value="${esc(v)}">
+    <button class="btn btn-ghost btn-sm rm-row" type="button">✕</button>
+  </div>`;
+}
+
+/* =========================================================
+   PRINT IMPLEMENTATION
+   ========================================================= */
+function triggerPrintDialog(htmlContent, documentTitle) {
+  const printArea = document.getElementById('printArea');
+  printArea.innerHTML = htmlContent;
+  const originalTitle = document.title;
+  document.title = documentTitle;
+  window.print();
+  document.title = originalTitle;
+  printArea.innerHTML = '';
+}
+
+function printSchoolInfo(schoolInfo){
+  const list = schoolInfo.teachers;
+  const customCols = customKeysFor(list);
+  const meta = SCHOOL_META[schoolInfo.udise] || {};
+
+  const html = `
+    <h2>${esc(headerSettings.title)}</h2>
+    <div class="print-sub">${esc(headerSettings.sub)} ${headerSettings.venue ? '| '+esc(headerSettings.venue) : ''}</div>
+    
+    <table class="header-table">
+      <tr>
+        <td style="text-align: left; vertical-align: top; width: 60%;">
+          <b>शाळा:</b> ${esc(schoolInfo.school)}<br>
+          <b>UDISE:</b> ${esc(schoolInfo.udise || '-')} &nbsp;&nbsp;&nbsp; <b>BRC:</b> ${esc(schoolInfo.brc || '-')} <br>
+          <b>Management:</b> ${esc(meta.mgt || '-')} &nbsp;&nbsp;&nbsp; <b>Class:</b> ${esc(meta.cls || '-')}
+        </td>
+        <td style="text-align: right; vertical-align: bottom; width: 40%;">
+          <b>HM:</b> ${esc(meta.hm || '-')} <br>
+          <b>Contact:</b> ${esc(meta.phone || '-')} <br><br>
+          <b>दिनांक:</b> ${esc(headerSettings.date || new Date().toLocaleDateString('en-IN'))}
+        </td>
+      </tr>
+    </table>
+
+    <table>
+      <thead>
+        <tr>
+          <th>अ.क्र.</th>
+          <th>शिक्षकाचे नाव</th>
+          <th>स्थिती</th>
+          ${customCols.map(c => `<th>${esc(c)}</th>`).join('')}
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((t, i) => `
+          <tr>
+            <td>${i+1}</td>
+            <td>${esc(t.teacher)}</td>
+            <td>${esc(statusLabel(t.status))}</td>${customCols.map(c => `<td>${esc((t.custom && t.custom[c]) || '-')}</td>`).join('')}
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+  triggerPrintDialog(html, `${schoolInfo.school.trim()}_Teachers`);
+}
+
+function printFullInfo(list, titleText){
+  const html = `
+    <h2>${esc(headerSettings.title)}</h2>
+    <div class="print-sub">${esc(headerSettings.sub)} ${headerSettings.venue ? '| '+esc(headerSettings.venue) : ''}</div>
+    
+    <table class="header-table">
+      <tr>
+        <td style="text-align: left;"><b>एकूण नोंदी:</b> ${list.length}</td>
+        <td style="text-align: right;"><b>दिनांक:</b> ${esc(headerSettings.date || new Date().toLocaleDateString('en-IN'))}</td>
+      </tr>
+    </table>
+
+    <table>
+      <thead>
+        <tr>
+          <th>अ.क्र.</th>
+          <th>शाळा</th>
+          <th>UDISE</th>
+          <th>शिक्षकाचे नाव</th>
+          <th>स्थिती</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((t, i) => `
+          <tr>
+            <td>${i+1}</td>
+            <td>${esc(t.school)}</td>
+            <td>${esc(t.udise || '-')}</td>
+            <td>${esc(t.teacher)}</td>
+            <td>${esc(statusLabel(t.status))}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+  triggerPrintDialog(html, 'Teacher_Register_Full');
+}
+
+/* =========================================================
+   MAIN RENDER
+   ========================================================= */
+function render(){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===state.tab));
+  const app = document.getElementById('app');
+  if(state.tab==='dashboard') app.innerHTML = renderDashboard();
+  else if(state.tab==='teachers') app.innerHTML = renderTeachersTab();
+  else if(state.tab==='schools') app.innerHTML = renderSchoolsTab();
+  attachHandlers();
+}
+
+function renderDashboard(){
+  let activeList = DB.filter(r => isAdmin || !hiddenSchools.includes(r.school+'||'+r.udise));
+  const total = activeList.length;
+  const schools = uniqueSchools().length;
+  
+  const byStatus = {};
+  STATUS_OPTS.forEach(s=>byStatus[s]=0);
+  activeList.forEach(r=>{ byStatus[r.status] = (byStatus[r.status]||0)+1; });
+
+  const maxC = Math.max(1,...Object.values(byStatus));
+  return `
+    <h2 class="section-title">विहंगावलोकन</h2>
+    <p class="section-sub">${headerSettings.title} — एकूण नोंदवही स्थिती</p>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="num">${total}</div><div class="lbl">एकूण शिक्षक</div></div>
+      <div class="stat-card"><div class="num">${schools}</div><div class="lbl">एकूण शाळा</div></div>
+      ${STATUS_OPTS.map(s=>`<div class="stat-card" style="border-top-color:${STATUS_COLOR[s]};"><div class="num" style="color:${STATUS_COLOR[s]};">${byStatus[s]}</div><div class="lbl">${statusLabel(s)}</div></div>`).join('')}
     </div>
+    <div class="panel">
+      <h3>स्थितीनुसार विभागणी</h3>
+      ${STATUS_OPTS.map(s=>{
+        const v = byStatus[s]; const pct = Math.round((v/maxC)*100);
+        return `<div class="bar-row">
+          <div class="bar-label">${statusLabel(s)}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}\%;background:${STATUS_COLOR[s]};"></div></div>
+          <div class="bar-val">${v}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    
+    ${isAdmin ? `
+    <div class="panel">
+      <h3>त्वरित कृती (प्रशासक)</h3>
+      <div class="toolbar" style="margin-bottom:0;">
+        <button class="btn btn-navy" id="dashAddTeacher">+ नवीन शिक्षक जोडा</button>
+        <button class="btn btn-ghost" id="dashExportAll">🖨️ संपूर्ण यादी प्रिंट करा</button>
+      </div>
+    </div>` : ''}
+  `;
+}
 
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-[80] flex flex-col space-y-3 no-print"></div>
+function renderTeachersTab(){
+  let list = DB.filter(r=>{
+    if(!isAdmin && hiddenSchools.includes(r.school+'||'+r.udise)) return false;
+    if(state.teacherStatus && r.status!==state.teacherStatus) return false;
+    if(state.teacherBrc && r.brc!==state.teacherBrc) return false;
+    if(state.teacherSearch){
+      const q = state.teacherSearch.toLowerCase();
+      if(!(r.teacher.toLowerCase().includes(q) || r.school.toLowerCase().includes(q) || (r.udise||'').includes(q))) return false;
+    }
+    return true;
+  });
+  
+  const total = list.length;
+  const pages = Math.max(1, Math.ceil(total/state.pageSize));
+  state.teacherPage = Math.min(state.teacherPage, pages);
+  const startIdx = (state.teacherPage-1)*state.pageSize;
+  const pageList = list.slice(startIdx, startIdx+state.pageSize);
+  const brcs = allBrcs();
 
-    <script>
-        const ADMIN_PIN = "1234"; // Admin PIN
-        
-        let customColumns = []; 
-        let currentSort = { field: null, direction: 'asc' };
-        let currentAuthCallback = null; 
+  return `
+    <h2 class="section-title">शिक्षक यादी</h2>
+    <p class="section-sub">शोधा, गाळणी लावा ${isAdmin? 'आणि आवश्यकतेनुसार संपादित करा':''}</p>
+    <div class="toolbar">
+      <input class="input search-input" id="tSearch" placeholder="शिक्षक / शाळा / UDISE शोधा…" value="${esc(state.teacherSearch)}">
+      <select class="input" id="tStatus">
+        <option value="">सर्व स्थिती</option>
+        ${STATUS_OPTS.map(s=>`<option value="${s}" ${state.teacherStatus===s?'selected':''}>${statusLabel(s)}</option>`).join('')}
+      </select>
+      ${brcs.length>1?`<select class="input" id="tBrc">
+        <option value="">सर्व BRC</option>
+        ${brcs.map(b=>`<option value="${esc(b)}" ${state.teacherBrc===b?'selected':''}>${esc(b)}</option>`).join('')}
+      </select>`:''}
+      <div class="spacer"></div>
+      ${isAdmin ? `
+        <button class="btn btn-ghost" id="exportFilteredPdf">🖨️ फिल्टर केलेली यादी प्रिंट करा</button>
+        <button class="btn btn-navy" id="addTeacherBtn">+ नवीन शिक्षक</button>
+      `:''}
+    </div>
+    <div class="result-count">${total} पैकी ${pageList.length} नोंदी दाखवत आहे</div>
+    ${total===0? `<div class="empty-state"><div class="big">—</div>कोणतीही नोंद आढळली नाही</div>` : `
+    <div class="table-scroll">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>अ.क्र.</th>
+            <th>शाळा</th>
+            <th>शिक्षकाचे नाव</th>
+            <th>स्थिती</th>
+            ${isAdmin ? '<th>कृती</th>' : ''}
+          </tr>
+        </thead>
+        <tbody>
+          ${pageList.map((r,i)=>`
+            <tr>
+              <td>${startIdx+i+1}</td>
+              <td>${esc(r.school)}<br><span class="muted" style="font-size:11.5px;">UDISE: ${esc(r.udise)||'—'}</span></td>
+              <td>${esc(r.teacher)}</td>
+              <td><span class="badge ${badgeClass(r.status)}">${statusLabel(r.status)}</span></td>
+              ${isAdmin ? `
+              <td class="row-actions">
+                <button class="btn btn-ghost btn-sm edit-row" data-id="${r.id}">संपादन</button>
+              </td>` : ''}
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <button class="btn btn-ghost btn-sm" id="prevPage" ${state.teacherPage<=1?'disabled':''}>‹ मागे</button>
+      <span class="page-info">पान ${state.teacherPage} /${pages}</span>
+      <button class="btn btn-ghost btn-sm" id="nextPage" ${state.teacherPage>=pages?'disabled':''}>पुढे ›</button>
+    </div>`}
+  `;
+}
 
-        // Full dataset with all 67 schools
-        let schools = [
-            {"udise": "27270101613", "schoolName": "जि.प.प्रा.शा. क्र. २, अंबाजोगाई", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "बळीराम शिवदास आकुसकर", "mobile": "9011999904", "customData": {}},
-            {"udise": "27270101620", "schoolName": "मिलिया प्रा. शा. अंबा", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "2-Private Aided", "principal": "SHAIKH JAMEEL NAWAB", "mobile": "9960454571", "customData": {}},
-            {"udise": "27270101695", "schoolName": "नारायणा वर्ल्ड स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "4-Self Finance", "principal": "Thorat G P", "mobile": "8329811192", "customData": {}},
-            {"udise": "27270102401", "schoolName": "जि.प.प्रा.शा. साकुड (मराठी)", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "अंगद कोंडीबा घुले", "mobile": "9822373937", "customData": {}},
-            {"udise": "27270102503", "schoolName": "जि.प.प्रा.शा. भीमाई वस्ती", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "वंदना तुकाराम उजगरे", "mobile": "9552983384", "customData": {}},
-            {"udise": "27270102601", "schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. २", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "संजय हणमंतराव कचकलवार", "mobile": "9284746414", "customData": {}},
-            {"udise": "27270102801", "schoolName": "जि.प.प्रा.शा. मांडवा तांडा", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "संजय ज्ञानोबा पाडोळे", "mobile": "7020929833", "customData": {}},
-            {"udise": "27270103001", "schoolName": "जि.प.प्रा.शा. नागझरी वसाहत", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "बालासाहेब व्यंकटराव कातळे", "mobile": "8999022483", "customData": {}},
-            {"udise": "27270103002", "schoolName": "कै. दादाराव कराड प्रा. शा. नागझरी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "3-Unaided", "principal": "KARAD RAMRAJE NARAYAN", "mobile": "9730035874", "customData": {}},
-            {"udise": "27270103102", "schoolName": "जि.प.प्रा.शा. सह्याद्री नगर शेपवाडी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "अनिता सदाशिव नखाते", "mobile": "9403356595", "customData": {}},
-            {"udise": "27270103301", "schoolName": "जि.प.प्रा.शा. वरवटी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "ज्योतीबाई देवीदासराव शिंदे", "mobile": "9403645467", "customData": {}},
-            {"udise": "27270103303", "schoolName": "जि.प.प्रा.शा. उघडे वस्ती (वरवटी)", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "शोभा अंगदराव चाटे", "mobile": "8999768368", "customData": {}},
-            {"udise": "27270103401", "schoolName": "जि.प.प्रा.शा. तलाव पाटी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "मनीषा धोंडोपंत चिंचोलीकर", "mobile": "9420194266", "customData": {}},
-            {"udise": "27270103701", "schoolName": "जि.प.प्रा.शा. गिरवली आपेट", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "सुनिल आनंदराव फुलेवार", "mobile": "9423733945", "customData": {}},
-            {"udise": "27270100109", "schoolName": "खोलेश्वर जीनियस सीबीएससी स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "4-Self Finance", "principal": "Pratibha Ankush Shinde", "mobile": "9975791303", "customData": {}},
-            {"udise": "27270101688", "schoolName": "छत्रपती संभाजी राजे ग्लोबल स्कूल आणि ज्युनियर कॉलेज जोगाईवाडी", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "4-Self Finance", "principal": "Gangane Shashikala Nagorao", "mobile": "8788801400", "customData": {}},
-            {"udise": "27270102501", "schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. १", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "1-ZP", "principal": "उत्तम बाबुराव डोंगरे", "mobile": "9689008389", "customData": {}},
-            {"udise": "27270102502", "schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. ३", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "1-ZP", "principal": "मंजुषा भीमाशंकर जिडगे", "mobile": "9561941714", "customData": {}},
-            {"udise": "27270102901", "schoolName": "जि.प.प्रा.शा. पोलेवाडी", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "1-ZP", "principal": "राजेसाहेब वैजनाथराव सोमवंशी", "mobile": "7020708970", "customData": {}},
-            {"udise": "27270103502", "schoolName": "जि. प. प्रा.शा. गोल्टावस्ती", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "1-ZP", "principal": "शालन नागनाथ जोगदंड", "mobile": "9763233793", "customData": {}},
-            {"udise": "27270102405", "schoolName": "श्री साई समर्थ प्रा. शा.", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "4-Self Finance", "principal": "उपलब्ध नाही", "mobile": "उपलब्ध नाही", "customData": {}},
-            {"udise": "27270101612", "schoolName": "सी.पी.एस. रविवार पेठ", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "इंद्रजित शिवाजीराव डांगे", "mobile": "9403023319", "customData": {}},
-            {"udise": "27270101618", "schoolName": "कै. देवराव बालाजी गणगे योगेश्वरी नूतन प्राथमिक विभाग अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "KHANDERAO BHAGWANRAO NANDGAONKAR", "mobile": "9881638496", "customData": {}},
-            {"udise": "27270101619", "schoolName": "नेताजी सुभाषचंद्र प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "Magar RB", "mobile": "9421946215", "customData": {}},
-            {"udise": "27270101626", "schoolName": "खोलेश्वर प्रा. शा. अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "Shivaji Angad Hendge", "mobile": "9421375441", "customData": {}},
-            {"udise": "27270101628", "schoolName": "उर्दू प्रा. शा. रविवार पेठ अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "Qureshi Mohammed Ilyasuddin Salimuddin", "mobile": "9422742930", "customData": {}},
-            {"udise": "27270101629", "schoolName": "न्यू इंग्लिश प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "4-Self Finance", "principal": "Mr Bhasme Mahesh Marutirao", "mobile": "9403645496", "customData": {}},
-            {"udise": "27270101633", "schoolName": "घाट नागनाथ प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "SOLANKE SANDHYA UTTAMRAO", "mobile": "8830773269", "customData": {}},
-            {"udise": "27270101660", "schoolName": "श्री व्यंकटेश विद्या मंदिर प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "Chaudhari SG", "mobile": "8805044747", "customData": {}},
-            {"udise": "27270102701", "schoolName": "जि.प.प्रा.शा. मांडवा पठाण", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "बापूराव राघुआप्पा धारेकर", "mobile": "7020752753", "customData": {}},
-            {"udise": "27270103101", "schoolName": "जि.प.प्रा.शा. शेपवाडी", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "शैलजा उत्तमराव जोशी", "mobile": "9403882075", "customData": {}},
-            {"udise": "27270103201", "schoolName": "जि.प.प्रा.शा. पिंपळा धायगुडा (मराठी)", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "संजीव कचरू उमाप", "mobile": "9284023434", "customData": {}},
-            {"udise": "27270103203", "schoolName": "जि.प.प्रा.शा. पिंपळा धायगुडा (उर्दू)", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "सय्यदा हिना सय्यद सरफराजोद्दीन", "mobile": "8600504215", "customData": {}},
-            {"udise": "27270103501", "schoolName": "जि.प.प्रा.शा. अंबलवाडी", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "आनंद पांडुरंग सिरसाट", "mobile": "9850940078", "customData": {}},
-            {"udise": "27270105504", "schoolName": "सोमेश्वर उर्दू प्राथमिक शाळा पिंपळा धायगुडा अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "Pathan Sartaj Khan Razzak Khan", "mobile": "9767116668", "customData": {}},
-            {"udise": "27270100105", "schoolName": "जिजाऊ स्कूल भगवानबाबा चौक अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "4-Self Finance", "principal": "Londhal DA", "mobile": "9405247008", "customData": {}},
-            {"udise": "27270101623", "schoolName": "नूरजहाँ उर्दू प्राथमिक शाळा अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "2-Private Aided", "principal": "FAIZ MOOSA SAYYED", "mobile": "9028891469", "customData": {}},
-            {"udise": "27270101685", "schoolName": "सुलावंतीबाई बाळासाहेब शिंदे प्रा. शा. इंग्लिश अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "4-Self Finance", "principal": "Bade Rekha Subhash", "mobile": "9404121272", "customData": {}},
-            {"udise": "27270102404", "schoolName": "जि.प.प्रा.शा. साकुड (उर्दू)", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "1-ZP", "principal": "आरिफ अहमद अब्दुल रशीद शेख", "mobile": "9405292799", "customData": {}},
-            {"udise": "27270103802", "schoolName": "तुकाराम पाटील प्रा. शा. गिरवली", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "2-Private Aided", "principal": "Gangane Anant Satwaram", "mobile": "9421913422", "customData": {}},
-            {"udise": "27270103803", "schoolName": "जिजाऊ इंटरनॅशनल स्कूल गिरवली (बी)", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "4-Self Finance", "principal": "Apet S B", "mobile": "9422773141", "customData": {}},
-            {"udise": "27270101669", "schoolName": "प्रमोदजी महाजन न्यू इंग्लिश स्कूल", "classes": "इयत्ता १ ते १० (Class 1 to 10)", "management": "4-Self Finance", "principal": "Dr Yogesh Subhashrao Kulkarni", "mobile": "9422745733", "customData": {}},
-            {"udise": "27270103801", "schoolName": "जि.प.हा.स्कू. गिरवली", "classes": "इयत्ता १ ते १० (Class 1 to 10)", "management": "1-ZP", "principal": "Ravindra Deogaonkar", "mobile": "9405662166", "customData": {}},
-            {"udise": "27270100107", "schoolName": "मुक्तांगण विद्यालय गिरवली रोड अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "Shinde BV", "mobile": "9422773141", "customData": {}},
-            {"udise": "27270100110", "schoolName": "विझडम इंग्लिश स्कूल ज्युनियर कॉलेज अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "Shaikh Ayesha Kirmani Naseer", "mobile": "9403881891", "customData": {}},
-            {"udise": "27270100111", "schoolName": "स्कॉलर्स एज्युकेशन पॅलेस अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "PATHAN ARSHAD", "mobile": "8380921212", "customData": {}},
-            {"udise": "27270101654", "schoolName": "न्यू विजन इंग्लिश स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "M Prashant Kumar", "mobile": "9665746911", "customData": {}},
-            {"udise": "27270101690", "schoolName": "एरा इंटरनॅशनल स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "Deshmukh Matin Ghulamrasoolatin", "mobile": "9730668387", "customData": {}},
-            {"udise": "27270103003", "schoolName": "सरस्वती पब्लिक स्कूल नागझरी", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "RAUT SS", "mobile": "9730035872", "customData": {}},
-            {"udise": "27270103702", "schoolName": "प्रेषिता इंटरनॅशनल स्कूल आणि ज्युनियर कॉलेज", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "उपलब्ध नाही", "mobile": "उपलब्ध नाही", "customData": {}},
-            {"udise": "27270101615", "schoolName": "डॉ. राम भालचंद्र हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Awad Sunil Premraj", "mobile": "9422931408", "customData": {}},
-            {"udise": "27270101635", "schoolName": "योगेश्वरी नूतन हायस्कूल अंबा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Shrimati PATHAK APARNA RAOSAHEB", "mobile": "9403927545", "customData": {}},
-            {"udise": "27270101636", "schoolName": "श्रीमती गोदावरीबाई कुंकुलोळ योगेश्वरी कन्या हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "MEENA SURESH KULKARNI", "mobile": "8459332551", "customData": {}},
-            {"udise": "27270101639", "schoolName": "नेताजी सुभाष हायस्कूल अंबा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Shinde Satish Bhagvat", "mobile": "9421344616", "customData": {}},
-            {"udise": "27270101643", "schoolName": "खोलेश्वर हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Anantram sundarrao Kople", "mobile": "9403571582", "customData": {}},
-            {"udise": "27270101648", "schoolName": "कै. दादाराव कराड हायस्कूल शेपवाडी", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "3-Unaided", "principal": "KARAD RAMRAJE NARAYAN", "mobile": "9730035874", "customData": {}},
-            {"udise": "27270102402", "schoolName": "सरस्वती हायस्कूल साकुड", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Tambade GS", "mobile": "7709196103", "customData": {}},
-            {"udise": "27270102702", "schoolName": "वेनगंगा हायस्कूल मांडवा पठाण", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Shri Jadhav Rajendra Ramkaran", "mobile": "9028987610", "customData": {}},
-            {"udise": "27270103202", "schoolName": "अल्लाम सिद्दीकी अल. उर्दू हायस्कूल पिंपळा धायगुडा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Shaikh Nabee Babamiya", "mobile": "9850646724", "customData": {}},
-            {"udise": "27270103302", "schoolName": "वसंतराव नाईक विद्यालय वरवटी", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "MUNDE SS", "mobile": "9421277292", "customData": {}},
-            {"udise": "27270101614", "schoolName": "जोधाप्रसाद मोदी माध्यमिक व उच्च माध्यमिक शाळा अंबाजोगाई", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "management": "2-Private Aided", "principal": "Munje VA", "mobile": "9421341688", "customData": {}},
-            {"udise": "27270101640", "schoolName": "मिलिया हायस्कूल अंबा", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "management": "2-Private Aided", "principal": "MOHAMMAD IRSHAD AHMED", "mobile": "9284931302", "customData": {}},
-            {"udise": "27270101661", "schoolName": "श्री व्यंकटेश विद्या मंदिर हायस्कूल अंबा", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "management": "2-Private Aided", "principal": "Shri KAKADE S B", "mobile": "8805044747", "customData": {}},
-            {"udise": "27270101305", "schoolName": "छत्रपती संभाजी राजे ग्लोबल स्कूल जोगाईवाडी", "classes": "इयत्ता ६ ते १२ (Class 6 to 12)", "management": "4-Self Finance", "principal": "Gangane Shashikala Nagorao", "mobile": "8788801400", "customData": {}},
-            {"udise": "27270101647", "schoolName": "मन्सूर हायस्कूल रविवार पेठ अंबाजोगाई", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "management": "2-Private Aided", "principal": "SAYYED MERAJ AHMAD MOOSA", "mobile": "9822283894", "customData": {}},
-            {"udise": "27270101649", "schoolName": "सावरकर विद्यालय पिंपळा धायगुडा", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "management": "2-Private Aided", "principal": "Annasaheb Mukundrao Hulge", "mobile": "9767801101", "customData": {}},
-            {"udise": "27270101653", "schoolName": "न्यू इंग्लिश हायस्कूल गुरुवार पेठ अंबाजोगाई", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "management": "4-Self Finance", "principal": "BHASME MM", "mobile": "9890038251", "customData": {}}
-        ];
+function renderSchoolsTab(){
+  let schools = uniqueSchools();
+  const lists = getDropdownLists();
 
-        // Load Memory (Local Storage) - Keys updated to V4 to force the browser to reset and load all 67 schools
-        if (localStorage.getItem('portalSchoolsV4')) schools = JSON.parse(localStorage.getItem('portalSchoolsV4'));
-        if (localStorage.getItem('portalCustomColsV4')) customColumns = JSON.parse(localStorage.getItem('portalCustomColsV4'));
+  // Filter
+  schools = schools.filter(s => {
+    if(state.schoolSearch){
+      const q = state.schoolSearch.toLowerCase();
+      if(!(s.school.toLowerCase().includes(q) || (s.udise||'').includes(q))) return false;
+    }
+    if(state.schoolMgt && s.mgt !== state.schoolMgt) return false;
+    if(state.schoolCls && s.cls !== state.schoolCls) return false;
+    return true;
+  });
 
-        function saveData() {
-            localStorage.setItem('portalSchoolsV4', JSON.stringify(schools));
-            localStorage.setItem('portalCustomColsV4', JSON.stringify(customColumns));
+  // Sort
+  schools.sort((a,b) => {
+    if(state.schoolSort === 'mgt') return a.mgt.localeCompare(b.mgt) || a.school.localeCompare(b.school);
+    if(state.schoolSort === 'cls') return a.cls.localeCompare(b.cls) || a.school.localeCompare(b.school);
+    return a.school.localeCompare(b.school);
+  });
+
+  if(state.openSchool){
+    const info = schools.find(s=>s.school+'||'+s.udise === state.openSchool);
+    if(info) return renderSchoolDetail(info);
+    state.openSchool = null; // if not found due to filter
+  }
+
+  return `
+    <h2 class="section-title">शाळानिहाय यादी</h2>
+    <p class="section-sub">${schools.length} शाळा उपलब्ध</p>
+    <div class="toolbar">
+      <input class="input search-input" id="sSearch" placeholder="शाळा किंवा UDISE शोधा…" value="${esc(state.schoolSearch)}">
+      
+      <select class="input" id="sMgt">
+        <option value="">सर्व व्यवस्थापन (All Management)</option>
+        ${lists.mgtList.map(m => `<option value="${esc(m)}" ${state.schoolMgt===m?'selected':''}>${esc(m)}</option>`).join('')}
+      </select>
+      
+      <select class="input" id="sCls">
+        <option value="">सर्व इयत्ता (All Classes)</option>
+        ${lists.clsList.map(c => `<option value="${esc(c)}" ${state.schoolCls===c?'selected':''}>${esc(c)}</option>`).join('')}
+      </select>
+      
+      <select class="input" id="sSort">
+        <option value="name" ${state.schoolSort==='name'?'selected':''}>नावानुसार (By Name)</option>
+        <option value="mgt" ${state.schoolSort==='mgt'?'selected':''}>व्यवस्थापनानुसार (By Management)</option>
+        <option value="cls" ${state.schoolSort==='cls'?'selected':''}>इयत्तेनुसार (By Class)</option>
+      </select>
+    </div>
+    
+    <div class="school-grid">
+      ${schools.map((s, index)=>{
+        const isHidden = hiddenSchools.includes(s.school+'||'+s.udise);
+        const counts = {}; STATUS_OPTS.forEach(k=>counts[k]=0);
+        s.teachers.forEach(t=>counts[t.status]=(counts[t.status]||0)+1);
+        return `<div class="school-card ${isHidden ? 'school-hidden' : ''}" data-key="${esc(s.school+'||'+s.udise)}">
+          <h4><span class="s-num">#${index + 1}</span> ${esc(s.school)}${isHidden ? ' 🚫' : ''}</h4>
+          
+          <div class="meta" style="margin-bottom:6px; color:var(--navy);">
+            <strong>Mgt:</strong> ${esc(s.mgt)} &nbsp;\vert{}&nbsp; <strong>Class:</strong>${esc(s.cls)}
+          </div>
+          <div class="meta" style="margin-bottom:6px;">
+            <strong>HM:</strong> ${esc(s.hm)} (☎${esc(s.phone)})
+          </div>
+          
+          <div class="meta" style="border-top:1px dashed var(--line); padding-top:6px;">
+             UDISE: ${esc(s.udise)||'—'} · BRC: ${esc(s.brc)\vert{}\vert{}'—'} · <b>${s.teachers.length} शिक्षक</b>
+          </div>
+          
+          <div class="badges">
+            ${STATUS_OPTS.map(k=> counts[k]? `<span class="mini-badge ${badgeClass(k)}">${statusLabel(k)} ${counts[k]}</span>`:'').join('')}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${schools.length===0?`<div class="empty-state"><div class="big">—</div>कोणतीही शाळा आढळली नाही</div>`:''}
+  `;
+}
+
+function renderSchoolDetail(info){
+  const customCols = customKeysFor(info.teachers);
+  const key = info.school+'||'+info.udise;
+  const isHidden = hiddenSchools.includes(key);
+
+  return `
+    <button class="btn btn-ghost btn-sm" id="backToSchools" style="margin-bottom:14px;">‹ सर्व शाळांकडे परत जा</button>
+    <div class="panel" style="margin-bottom:16px;">
+      <h2 class="section-title" style="margin-bottom:8px;">${esc(info.school)}</h2>
+      <p class="section-sub" style="margin-bottom:6px; color:var(--navy);">
+        <strong>Management:</strong> ${esc(info.mgt)} &nbsp;·&nbsp; <strong>Class:</strong> ${esc(info.cls)}
+      </p>
+      <p class="section-sub" style="margin-bottom:12px;">
+        <strong>HM:</strong> ${esc(info.hm)} (${esc(info.phone)}) <br>
+        UDISE: ${esc(info.udise)||'—'} &nbsp;·&nbsp; BRC: ${esc(info.brc)||'—'} &nbsp;·&nbsp; एकूण शिक्षक: <b>${info.teachers.length}</b>
+      </p>
+      
+      ${isAdmin ? `
+      <div class="toolbar" style="margin-bottom:0;">
+        <button class="btn btn-maroon" id="printSchoolBtn">🖨️ यादी प्रिंट करा</button>
+        <button class="btn btn-navy" id="addTeacherToSchool">+ शिक्षक जोडा</button>
+        <button class="btn btn-outline-light" style="color:var(--ink); border-color:var(--line);" id="toggleSchoolHide">
+           ${isHidden ? '👁️ ही शाळा पब्लिकला दाखवा' : '🚫 ही शाळा पब्लिकपासून लपवा'}
+        </button>
+      </div>` : ''}
+    </div>
+    <div class="table-scroll">
+      <table class="data">
+        <thead>
+          <tr>
+             <th>अ.क्र.</th>
+             <th>शिक्षकाचे नाव</th>
+             <th>स्थिती</th>
+             ${customCols.map(c=>`<th>${esc(c)}</th>`).join('')}
+             ${isAdmin ? '<th>कृती</th>' : ''}
+          </tr>
+        </thead>
+        <tbody>
+          ${info.teachers.map((t,i)=>`
+            <tr>
+              <td>${i+1}</td>
+              <td>${esc(t.teacher)}</td>
+              <td><span class="badge ${badgeClass(t.status)}">${statusLabel(t.status)}</span></td>${customCols.map(c=>`<td>${esc((t.custom&&t.custom[c])||'—')}</td>`).join('')}
+              ${isAdmin ? `<td><button class="btn btn-ghost btn-sm edit-row" data-id="${t.id}">संपादन</button></td>` : ''}
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* =========================================================
+   EVENT WIRING
+   ========================================================= */
+function attachHandlers(){
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.onclick = ()=>{ state.tab=b.dataset.tab; state.openSchool=null; render(); };
+  });
+
+  if(state.tab==='dashboard'){
+    const a = document.getElementById('dashAddTeacher');
+    if(a) a.onclick = ()=> openTeacherForm(null);
+    const e = document.getElementById('dashExportAll');
+    if(e) e.onclick = ()=> {
+       let list = DB.filter(r => !hiddenSchools.includes(r.school+'||'+r.udise));
+       printFullInfo(list, 'Teacher Register');
+    };
+  }
+
+  if(state.tab==='teachers'){
+    const s = document.getElementById('tSearch');
+    if(s){ s.oninput = ()=>{ state.teacherSearch=s.value; state.teacherPage=1; render(); }; }
+    const st = document.getElementById('tStatus');
+    if(st){ st.onchange = ()=>{ state.teacherStatus=st.value; state.teacherPage=1; render(); }; }
+    const br = document.getElementById('tBrc');
+    if(br){ br.onchange = ()=>{ state.teacherBrc=br.value; state.teacherPage=1; render(); }; }
+    const add = document.getElementById('addTeacherBtn');
+    if(add) add.onclick = ()=> openTeacherForm(null);
+    
+    const exp = document.getElementById('exportFilteredPdf');
+    if(exp) exp.onclick = ()=>{
+      let list = DB.filter(r=>{
+        if(!isAdmin && hiddenSchools.includes(r.school+'||'+r.udise)) return false;
+        if(state.teacherStatus && r.status!==state.teacherStatus) return false;
+        if(state.teacherBrc && r.brc!==state.teacherBrc) return false;
+        if(state.teacherSearch){
+          const q=state.teacherSearch.toLowerCase();
+          if(!(r.teacher.toLowerCase().includes(q) || r.school.toLowerCase().includes(q) || (r.udise||'').includes(q))) return false;
         }
+        return true;
+      });
+      printFullInfo(list, 'Filtered List');
+    };
+    
+    document.querySelectorAll('.edit-row').forEach(btn=>{
+      btn.onclick = ()=> {
+        const rec = DB.find(x=>x.id===btn.dataset.id);
+        openTeacherForm(rec);
+      };
+    });
+    const prev = document.getElementById('prevPage');
+    if(prev) prev.onclick = ()=>{ state.teacherPage--; render(); };
+    const next = document.getElementById('nextPage');
+    if(next) next.onclick = ()=>{ state.teacherPage++; render(); };
+  }
 
-        // --- Custom UI Systems (Toasts & PIN) --- //
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            const bgColor = type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800';
-            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500 mr-2"></i>' : '<i class="fa-solid fa-triangle-exclamation text-red-500 mr-2"></i>';
-            toast.className = `flex items-center p-4 rounded-lg shadow-lg border ${bgColor} toast-animate min-w-[250px] font-medium text-sm`;
-            toast.innerHTML = `${icon} <span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(100%)';
-                toast.style.transition = 'all 0.3s ease-in';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
+  if(state.tab==='schools'){
+    const sSearch = document.getElementById('sSearch');
+    if(sSearch){ sSearch.oninput = ()=>{ state.schoolSearch=sSearch.value; render(); }; }
+    
+    const sMgt = document.getElementById('sMgt');
+    if(sMgt){ sMgt.onchange = ()=>{ state.schoolMgt=sMgt.value; render(); }; }
+    
+    const sCls = document.getElementById('sCls');
+    if(sCls){ sCls.onchange = ()=>{ state.schoolCls=sCls.value; render(); }; }
+    
+    const sSort = document.getElementById('sSort');
+    if(sSort){ sSort.onchange = ()=>{ state.schoolSort=sSort.value; render(); }; }
 
-        // Generic Authentication wrapper
-        function authAction(callback) {
-            currentAuthCallback = callback;
-            const pinModal = document.getElementById('pinModal');
-            document.getElementById('pinInput').value = '';
-            pinModal.classList.remove('hidden');
-            pinModal.classList.add('flex');
-            setTimeout(() => document.getElementById('pinInput').focus(), 50);
-        }
+    document.querySelectorAll('.school-card').forEach(card=>{
+      card.onclick = ()=>{ state.openSchool = card.dataset.key; render(); };
+    });
+    
+    const back = document.getElementById('backToSchools');
+    if(back) back.onclick = ()=>{ state.openSchool=null; render(); };
+    
+    const dl = document.getElementById('printSchoolBtn');
+    if(dl) dl.onclick = ()=>{
+      const info = uniqueSchools().find(x=>x.school+'||'+x.udise===state.openSchool);
+      if(info) printSchoolInfo(info);
+    };
+    
+    const addToSchool = document.getElementById('addTeacherToSchool');
+    if(addToSchool) addToSchool.onclick = ()=> {
+      const info = uniqueSchools().find(x=>x.school+'||'+x.udise===state.openSchool);
+      openTeacherForm({id:null, brc:info.brc, school:info.school, udise:info.udise, teacher:'', status:'उपस्थित', custom:{}});
+    };
+    
+    const toggleHide = document.getElementById('toggleSchoolHide');
+    if(toggleHide) toggleHide.onclick = () => {
+      if(hiddenSchools.includes(state.openSchool)){
+        hiddenSchools = hiddenSchools.filter(k => k !== state.openSchool);
+        showToast('शाळा आता सर्वांना दिसेल');
+      } else {
+        hiddenSchools.push(state.openSchool);
+        showToast('शाळा लपवली गेली आहे');
+      }
+      localStorage.setItem('hidden-schools', JSON.stringify(hiddenSchools));
+      render();
+    };
 
-        function closePinModal() {
-            const pinModal = document.getElementById('pinModal');
-            pinModal.classList.add('hidden');
-            pinModal.classList.remove('flex');
-            currentAuthCallback = null;
-        }
+    document.querySelectorAll('.edit-row').forEach(btn=>{
+      btn.onclick = ()=> {
+        const rec = DB.find(x=>x.id===btn.dataset.id);
+        openTeacherForm(rec);
+      };
+    });
+  }
+}
 
-        function submitPin() {
-            const input = document.getElementById('pinInput').value;
-            if (input === ADMIN_PIN) {
-                closePinModal();
-                if(currentAuthCallback) currentAuthCallback();
-            } else {
-                showToast("Access Denied: Incorrect PIN", "error");
-                document.getElementById('pinInput').value = '';
-                document.getElementById('pinInput').focus();
-            }
-        }
+/* =========================================================
+   INIT
+   ========================================================= */
+let state = {
+  tab: "dashboard",
+  teacherSearch:"", teacherStatus:"", teacherBrc:"",
+  teacherPage:1, pageSize:40,
+  schoolSearch:"", schoolMgt:"", schoolCls:"", schoolSort:"name",
+  openSchool:null
+};
 
-        document.getElementById('pinInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') submitPin();
-        });
-
-        // --- Data Logic (Protected by PIN) --- //
-        function promptAddColumn() {
-            authAction(() => {
-                const colName = prompt("Enter the name for the new column (e.g., Status, Email):");
-                if (colName && colName.trim() !== "") {
-                    if(customColumns.includes(colName.trim())) {
-                        showToast("Column already exists!", "error");
-                        return;
-                    }
-                    customColumns.push(colName.trim());
-                    saveData();
-                    renderTable();
-                    showToast(`Column '${colName}' added successfully!`);
-                }
-            });
-        }
-
-        function deleteSchool(index) {
-            if(confirm("Are you sure you want to permanently delete this entry?")) {
-                authAction(() => {
-                    schools.splice(index, 1);
-                    saveData();
-                    renderTable();
-                    showToast("School deleted successfully!");
-                });
-            }
-        }
-
-        function sortBy(field) {
-            if (currentSort.field === field) {
-                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-            } else {
-                currentSort.field = field;
-                currentSort.direction = 'asc';
-            }
-            renderTable();
-        }
-
-        function updateStats() {
-            document.getElementById('statTotal').innerText = schools.length;
-            const zpCount = schools.filter(s => s.management.includes('1-ZP')).length;
-            const pvtCount = schools.filter(s => !s.management.includes('1-ZP') && !s.management.includes('0-GOVT')).length;
-            document.getElementById('statZp').innerText = zpCount;
-            document.getElementById('statPvt').innerText = pvtCount;
-            document.getElementById('statCols').innerText = customColumns.length;
-        }
-
-        function getManagementBadge(type) {
-            if (type.includes('1-ZP')) return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-100 text-emerald-800 shadow-sm border border-emerald-200">${type}</span>`;
-            if (type.includes('2-Private Aided')) return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-100 text-blue-800 shadow-sm border border-blue-200">${type}</span>`;
-            if (type.includes('3-Unaided')) return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-100 text-amber-800 shadow-sm border border-amber-200">${type}</span>`;
-            if (type.includes('4-Self Finance')) return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-purple-100 text-purple-800 shadow-sm border border-purple-200">${type}</span>`;
-            return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-800 shadow-sm border border-slate-200">${type}</span>`;
-        }
-
-        function renderTable() {
-            updateStats();
-            const searchTerm = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
-
-            // Apply Search filter
-            let displayList = schools
-                .map((s, idx) => ({ ...s, originalIndex: idx }))
-                .filter(s => 
-                    s.schoolName.toLowerCase().includes(searchTerm) || 
-                    s.udise.toLowerCase().includes(searchTerm) ||
-                    s.principal.toLowerCase().includes(searchTerm) ||
-                    s.management.toLowerCase().includes(searchTerm)
-                );
-
-            // Apply Sort
-            if (currentSort.field) {
-                displayList.sort((a, b) => {
-                    let valA = (a[currentSort.field] || '').toString().toLowerCase();
-                    let valB = (b[currentSort.field] || '').toString().toLowerCase();
-                    if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
-                    if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
-                    return 0;
-                });
-            }
-
-            // Build Headers - Removed global whitespace-nowrap to avoid horizontal scroll
-            const theadRow = document.getElementById('tableHeadRow');
-            let thHTML = `<th class="px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Sr. No.</th>`;
-            
-            const baseCols = [
-                { id: 'udise', label: 'UDISE', cls: 'whitespace-nowrap' },
-                { id: 'schoolName', label: 'School Name', cls: 'min-w-[180px] max-w-[280px] whitespace-normal break-words' },
-                { id: 'management', label: 'Management', cls: 'whitespace-nowrap' },
-                { id: 'principal', label: 'Principal (HM)', cls: 'min-w-[130px] max-w-[200px] whitespace-normal break-words' },
-                { id: 'mobile', label: 'Contact', cls: 'whitespace-nowrap' }
-            ];
-
-            baseCols.forEach(col => {
-                const isActive = currentSort.field === col.id;
-                const arrow = isActive ? (currentSort.direction === 'asc' ? ' <i class="fa-solid fa-arrow-up-small ml-1 text-indigo-500"></i>' : ' <i class="fa-solid fa-arrow-down-small ml-1 text-indigo-500"></i>') : ' <i class="fa-solid fa-sort ml-1 text-slate-300 sort-icon group-hover:text-slate-400 transition"></i>';
-                const activeClass = isActive ? 'text-indigo-700 bg-slate-200/50' : 'text-slate-600';
-                thHTML += `<th class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-200/50 transition group select-none ${col.cls} ${activeClass}" onclick="sortBy('${col.id}')">${col.label}${arrow}</th>`;
-            });
-
-            customColumns.forEach(col => {
-                thHTML += `<th class="px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider min-w-[120px] whitespace-normal break-words">${col}</th>`;
-            });
-            thHTML += `<th class="px-4 py-3.5 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider no-print whitespace-nowrap w-24">Actions</th>`;
-            theadRow.innerHTML = `<tr>${thHTML}</tr>`;
-
-            // Build Rows 
-            const tbody = document.getElementById('tableBody');
-            const emptyState = document.getElementById('emptyState');
-            tbody.innerHTML = '';
-
-            if (displayList.length === 0) {
-                emptyState.classList.remove('hidden');
-                emptyState.classList.add('flex');
-            } else {
-                emptyState.classList.add('hidden');
-                emptyState.classList.remove('flex');
-                
-                // Group by Class
-                const grouped = {};
-                displayList.forEach(item => {
-                    if(!grouped[item.classes]) grouped[item.classes] = [];
-                    grouped[item.classes].push(item);
-                });
-
-                let globalCounter = 1; 
-
-                for (const className in grouped) {
-                    const groupHeader = document.createElement('tr');
-                    groupHeader.className = "bg-slate-200 border-y border-slate-300 group-header";
-                    groupHeader.innerHTML = `<td colspan="${7 + customColumns.length}" class="px-4 py-2.5 text-center font-bold text-slate-800 text-[13px] tracking-wide">${className}</td>`;
-                    tbody.appendChild(groupHeader);
-
-                    grouped[className].forEach((item) => {
-                        const s = item;
-                        let trHTML = `
-                            <td class="px-4 py-3 text-[13px] font-bold text-slate-400 whitespace-nowrap">${globalCounter++}</td>
-                            <td class="px-4 py-3 text-[13px] font-mono text-slate-600 whitespace-nowrap">${s.udise}</td>
-                            <td class="px-4 py-3 text-sm font-medium text-slate-900 min-w-[180px] max-w-[280px] whitespace-normal break-words">${s.schoolName}</td>
-                            <td class="px-4 py-3 whitespace-nowrap">${getManagementBadge(s.management)}</td>
-                            <td class="px-4 py-3 text-[13px] text-slate-700 min-w-[130px] max-w-[200px] whitespace-normal break-words">${s.principal || '-'}</td>
-                            <td class="px-4 py-3 text-[13px] text-slate-700 whitespace-nowrap">${s.mobile || '-'}</td>
-                        `;
-
-                        // Add Custom Columns
-                        customColumns.forEach(col => {
-                            trHTML += `<td class="px-4 py-3 text-[13px] text-slate-600 min-w-[120px] whitespace-normal break-words">${s.customData && s.customData[col] ? s.customData[col] : '<span class="text-slate-300">-</span>'}</td>`;
-                        });
-
-                        // Actions
-                        trHTML += `
-                            <td class="px-4 py-3 text-center whitespace-nowrap no-print space-x-1.5 w-24">
-                                <button onclick="openModal(${s.originalIndex})" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded transition shadow-sm border border-indigo-100" title="Edit">
-                                    <i class="fa-solid fa-pen text-xs"></i>
-                                </button>
-                                <button onclick="deleteSchool(${s.originalIndex})" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded transition shadow-sm border border-rose-100" title="Delete">
-                                    <i class="fa-solid fa-trash text-xs"></i>
-                                </button>
-                            </td>
-                        `;
-
-                        const tr = document.createElement('tr');
-                        tr.className = "hover:bg-indigo-50/20 transition duration-150 border-b border-slate-100";
-                        tr.innerHTML = trHTML;
-                        tbody.appendChild(tr);
-                    });
-                }
-            }
-        }
-
-        const modal = document.getElementById('schoolModal');
-        const form = document.getElementById('schoolForm');
-
-        function openModal(index) {
-            const isEdit = index !== -1;
-            const school = isEdit ? schools[index] : { customData: {} };
-            
-            document.getElementById('modalTitle').innerHTML = isEdit ? '<i class="fa-solid fa-pen-to-square text-indigo-500 mr-2"></i> <span>Edit School Details</span>' : '<i class="fa-solid fa-plus-circle text-indigo-500 mr-2"></i> <span>Add New School</span>';
-            document.getElementById('editIndex').value = index;
-            
-            document.getElementById('udise').value = school.udise || '';
-            document.getElementById('schoolName').value = school.schoolName || '';
-            document.getElementById('classes').value = school.classes || '';
-            document.getElementById('management').value = school.management || '';
-            document.getElementById('principal').value = school.principal || '';
-            document.getElementById('mobile').value = school.mobile || '';
-            
-            const customContainer = document.getElementById('customFieldsContainer');
-            customContainer.innerHTML = '';
-            
-            if(customColumns.length > 0) {
-                customContainer.classList.remove('hidden');
-                customColumns.forEach(col => {
-                    const val = (school.customData && school.customData[col]) ? school.customData[col] : '';
-                    customContainer.innerHTML += `
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">${col}</label>
-                            <input type="text" value="${val}" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white custom-input" data-col="${col}">
-                        </div>
-                    `;
-                });
-            } else {
-                customContainer.classList.add('hidden');
-            }
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => { modal.children[0].classList.add('scale-100'); modal.children[0].classList.remove('scale-95', 'opacity-0'); }, 10);
-        }
-
-        function closeModal() {
-            modal.children[0].classList.add('scale-95', 'opacity-0');
-            modal.children[0].classList.remove('scale-100');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 200);
-        }
-
-        // Form Submit asks for PIN via authAction wrapper
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            authAction(() => {
-                const index = parseInt(document.getElementById('editIndex').value);
-                
-                const customInputs = document.querySelectorAll('.custom-input');
-                const newCustomData = {};
-                customInputs.forEach(input => {
-                    newCustomData[input.getAttribute('data-col')] = input.value.trim();
-                });
-
-                const newSchool = {
-                    udise: document.getElementById('udise').value.trim(),
-                    schoolName: document.getElementById('schoolName').value.trim(),
-                    classes: document.getElementById('classes').value.trim(),
-                    management: document.getElementById('management').value,
-                    principal: document.getElementById('principal').value.trim(),
-                    mobile: document.getElementById('mobile').value.trim(),
-                    customData: newCustomData
-                };
-
-                if (index === -1) {
-                    schools.push(newSchool);
-                    showToast("New school added successfully!");
-                } else {
-                    schools[index] = newSchool;
-                    showToast("School details updated!");
-                }
-
-                saveData();
-                renderTable();
-                closeModal();
-            });
-        });
-
-        // Google Sheets Webhook Sync 
-        function syncToGoogleSheets() {
-            authAction(() => {
-                const url = document.getElementById("gasUrl").value.trim();
-                if (!url || !url.startsWith("https://script.google.com/")) {
-                    showToast("Paste a valid Google Apps Script Web App URL first", "error");
-                    return;
-                }
-                
-                const btn = document.getElementById("syncBtn");
-                const originalHtml = btn.innerHTML;
-                btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Syncing...`;
-                btn.disabled = true;
-                
-                const payload = JSON.stringify({
-                    columns: customColumns,
-                    data: schools
-                });
-
-                fetch(url, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: payload
-                }).then(() => {
-                    showToast("Data sent to Cloud successfully!");
-                    btn.innerHTML = originalHtml;
-                    btn.disabled = false;
-                }).catch(err => {
-                    showToast("Network Error during sync", "error");
-                    btn.innerHTML = originalHtml;
-                    btn.disabled = false;
-                });
-            });
-        }
-
-        // Initialize App
-        renderTable();
-    </script>
+(async function init(){
+  document.getElementById('app').innerHTML = `<div class="empty-state">माहिती लोड होत आहे…</div>`;
+  await loadDB();
+  renderAdminArea();
+  render();
+})();
+</script>
 </body>
 </html>
+```eof
+
+### काय बदल केले आहेत:
+1. **संपूर्ण डेटा मॅपिंग (`SCHOOL_META`):** तुम्ही दिलेल्या PDF मधील सर्व ६७ शाळांच्या `UDISE` क्रमांकाचा वापर करून मुख्याध्यापकांचे नाव, संपर्क क्रमांक, Management आणि Class Range यांची माहिती जोडून घेतली आहे.
+2. **सॉर्टिंग आणि फिल्टरिंग (Sorting & Filtering):** 'शाळानिहाय' टॅबमध्ये आता नवीन ड्रॉपडाउन मेनू देण्यात आले आहेत.
+   * **Management** (व्यवस्थापन) नुसार फिल्टर.
+   * **Class Range** (इयत्ता) नुसार फिल्टर.
+   * **सॉर्ट (Sort):** शाळेच्या नावानुसार, व्यवस्थापनानुसार (Management), किंवा इयत्तेनुसार यादी सॉर्ट करता येईल. 
+3. **अनुक्रमांक (Numbering):** शाळेच्या कार्डांवर आणि यादीमध्ये डायनॅमिक `#1, #2...` अशी अनुक्रमित numbering ऍड केली आहे. 
+4. **डिझाईन अपडेट:** शाळेच्या कार्डवर व शाळेच्या आत गेल्यानंतर आता प्रामुख्याने HM चे नाव, नंबर, Management आणि Class आकर्षक पद्धतीने दिसेल. प्रिंट करताना देखील याची नोंद घेतली जाईल. 
+
+सदर फाईल तुम्ही जशीच्या तशी वापरू शकता. सर्व व्यवस्थापन आणि वर्ग आपोआप डेटाबेस मधून एक्सट्रॅक्ट होऊन फिल्टरमध्ये दिसतील.
