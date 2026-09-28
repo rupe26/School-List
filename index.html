@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +15,7 @@
             background-color: #f8fafc;
         }
         
-        /* Custom Scrollbar for better UI */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -29,23 +28,70 @@
         }
         .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
 
-        /* A4 PDF Print Styles */
+        /* Robust A4 PDF Print Styles */
         @media print {
-            body { background-color: white; padding: 0; margin: 0; }
-            .no-print { display: none !important; }
-            .print-container { width: 100%; padding: 0; margin: 0; }
-            .sidebar, .topbar { display: none !important; }
-            .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+            /* Reset body and container constraints */
+            html, body, main, .main-content, .print-container {
+                height: auto !important;
+                width: 100% !important;
+                overflow: visible !important;
+                position: static !important;
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background-color: white !important;
+            }
+            
+            /* Remove scroll constraints on table containers */
+            .overflow-hidden, .overflow-y-auto, .overflow-auto, div[style*="max-height"] {
+                overflow: visible !important;
+                height: auto !important;
+                max-height: none !important;
+            }
+
+            /* Hide UI Elements not needed for print */
+            .sidebar, .topbar, .no-print, header, aside, #toastContainer, #pinModal, #schoolModal { 
+                display: none !important; 
+            }
             
             @page { size: A4 landscape; margin: 10mm; }
             
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #333 !important; padding: 6px !important; font-size: 10px !important; text-align: left; color: black !important; }
-            th { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; }
-            h1 { font-size: 18px !important; text-align: center; margin-bottom: 10px; color: black !important; }
+            /* Expand Table for multi-page printing */
+            table { 
+                width: 100% !important; 
+                border-collapse: collapse !important; 
+                table-layout: auto !important;
+                page-break-inside: auto;
+            }
+            
+            thead { display: table-header-group !important; }
+            tr { page-break-inside: avoid !important; page-break-after: auto; }
+            
+            th, td { 
+                border: 1px solid #94a3b8 !important; 
+                padding: 6px !important; 
+                font-size: 11px !important; 
+                text-align: left; 
+                color: black !important;
+                white-space: normal !important;
+                word-wrap: break-word !important;
+            }
+            
+            th { 
+                background-color: #f1f5f9 !important; 
+                -webkit-print-color-adjust: exact; 
+                font-weight: bold !important;
+            }
+            
+            .group-header { 
+                background-color: #e2e8f0 !important; 
+                font-weight: bold; 
+                text-align: center; 
+                -webkit-print-color-adjust: exact; 
+            }
+            
             .sort-icon { display: none !important; }
             .badge { border: none !important; background: transparent !important; color: black !important; padding: 0 !important; font-weight: normal !important; }
-            .group-header { background-color: #e5e7eb !important; font-weight: bold; text-align: center; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -68,17 +114,8 @@
                         <i class="fa-solid fa-school w-6"></i> School Directory
                     </a>
                 </li>
-                <li class="pt-4 mt-4 border-t border-slate-800">
-                    <div class="px-6 text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">System Admin</div>
-                    <a href="#" class="flex items-center px-6 py-3 hover:bg-slate-800 hover:text-white transition">
-                        <i class="fa-solid fa-shield-halved w-6"></i> Access Control
-                    </a>
-                </li>
             </ul>
         </nav>
-        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
-            &copy; 2026 Edu Portal
-        </div>
     </aside>
 
     <main class="flex-1 flex flex-col h-screen overflow-hidden main-content bg-slate-50 relative w-full">
@@ -92,12 +129,7 @@
             <div class="flex items-center space-x-4">
                 <div class="relative hidden sm:block">
                     <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="Search schools, UDISE..." class="pl-10 pr-4 py-2 border border-slate-300 rounded-full text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-64 bg-slate-50 transition-all">
-                </div>
-                <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
-                <div class="flex items-center cursor-pointer hover:bg-slate-50 p-1 rounded transition">
-                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=6366f1&color=fff" alt="Admin" class="w-8 h-8 rounded-full border border-slate-200">
-                    <span class="ml-2 text-sm font-medium text-slate-700 hidden md:block">Admin User</span>
+                    <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="Search schools..." class="pl-10 pr-4 py-2 border border-slate-300 rounded-full text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-64 bg-slate-50 transition-all">
                 </div>
             </div>
         </header>
@@ -157,10 +189,10 @@
                 </div>
                 
                 <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
-                    <button onclick="authAction(addColumn)" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg shadow-sm transition flex items-center text-sm font-medium">
+                    <button onclick="promptAddColumn()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg shadow-sm transition flex items-center text-sm font-medium">
                         <i class="fa-solid fa-plus text-indigo-500 mr-2"></i> Add Column
                     </button>
-                    <button onclick="authAction(() => openModal(-1))" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-sm transition flex items-center text-sm font-medium">
+                    <button onclick="openModal(-1)" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-sm transition flex items-center text-sm font-medium">
                         <i class="fa-solid fa-school mr-2"></i> Add School
                     </button>
                     <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow-sm transition flex items-center text-sm font-medium">
@@ -194,7 +226,7 @@
     </main>
 
     <!-- School Add/Edit Modal -->
-    <div id="schoolModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center no-print z-50 transition-opacity">
+    <div id="schoolModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center no-print z-50 transition-opacity p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto transform transition-all">
             <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-5">
                 <h2 id="modalTitle" class="text-xl font-bold text-slate-800 flex items-center">
@@ -247,13 +279,13 @@
                     </div>
                 </div>
 
-                <!-- Custom Fields Injected Here -->
                 <div id="customFieldsContainer" class="border-t border-slate-100 pt-5 grid grid-cols-1 md:grid-cols-2 gap-5 hidden"></div>
 
                 <div class="flex justify-end space-x-3 pt-6 border-t border-slate-100">
                     <button type="button" onclick="closeModal()" class="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-lg transition">Cancel</button>
+                    <!-- Trigger PIN flow on save -->
                     <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md transition flex items-center">
-                        <i class="fa-solid fa-check mr-2"></i> Save Details
+                        <i class="fa-solid fa-lock mr-2 text-indigo-200"></i> Save Details
                     </button>
                 </div>
             </form>
@@ -261,34 +293,34 @@
     </div>
 
     <!-- Custom PIN Auth Modal -->
-    <div id="pinModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center no-print z-[60]">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center transform transition-all">
+    <div id="pinModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center no-print z-[70]">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center transform transition-all mx-4">
             <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500 text-2xl">
                 <i class="fa-solid fa-shield-halved"></i>
             </div>
             <h3 class="text-xl font-bold text-slate-800 mb-2">Admin Authentication</h3>
-            <p class="text-sm text-slate-500 mb-6">Enter secure PIN to proceed. (Hint: 1234)</p>
+            <p class="text-sm text-slate-500 mb-6">Enter secure PIN to confirm changes. (Hint: 1234)</p>
             
             <input type="password" id="pinInput" placeholder="••••" maxlength="4" class="w-full text-center tracking-[0.5em] text-3xl font-bold border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition mb-6 bg-slate-50">
             
             <div class="flex space-x-3">
                 <button onclick="closePinModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition">Cancel</button>
-                <button onclick="submitPin()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md transition">Unlock</button>
+                <button onclick="submitPin()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md transition">Confirm</button>
             </div>
         </div>
     </div>
 
     <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-[70] flex flex-col space-y-3 no-print"></div>
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-[80] flex flex-col space-y-3 no-print"></div>
 
     <script>
-        const ADMIN_PIN = "1234"; // Setup Admin PIN
+        const ADMIN_PIN = "1234"; // Admin PIN
         
         let customColumns = []; 
         let currentSort = { field: null, direction: 'asc' };
         let currentAuthCallback = null; 
 
-        // Full dataset exactly extracted from "मुख्याध्यापक यादी_2.pdf"
+        // Full dataset with all 67 schools
         let schools = [
             {"udise": "27270101613", "schoolName": "जि.प.प्रा.शा. क्र. २, अंबाजोगाई", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "बळीराम शिवदास आकुसकर", "mobile": "9011999904", "customData": {}},
             {"udise": "27270101620", "schoolName": "मिलिया प्रा. शा. अंबा", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "2-Private Aided", "principal": "SHAIKH JAMEEL NAWAB", "mobile": "9960454571", "customData": {}},
@@ -359,13 +391,13 @@
             {"udise": "27270101653", "schoolName": "न्यू इंग्लिश हायस्कूल गुरुवार पेठ अंबाजोगाई", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "management": "4-Self Finance", "principal": "BHASME MM", "mobile": "9890038251", "customData": {}}
         ];
 
-        // Load Memory (Local Storage Persistence)
-        if (localStorage.getItem('portalSchoolsV3')) schools = JSON.parse(localStorage.getItem('portalSchoolsV3'));
-        if (localStorage.getItem('portalCustomColsV3')) customColumns = JSON.parse(localStorage.getItem('portalCustomColsV3'));
+        // Load Memory (Local Storage) - Keys updated to V4 to force the browser to reset and load all 67 schools
+        if (localStorage.getItem('portalSchoolsV4')) schools = JSON.parse(localStorage.getItem('portalSchoolsV4'));
+        if (localStorage.getItem('portalCustomColsV4')) customColumns = JSON.parse(localStorage.getItem('portalCustomColsV4'));
 
         function saveData() {
-            localStorage.setItem('portalSchoolsV3', JSON.stringify(schools));
-            localStorage.setItem('portalCustomColsV3', JSON.stringify(customColumns));
+            localStorage.setItem('portalSchoolsV4', JSON.stringify(schools));
+            localStorage.setItem('portalCustomColsV4', JSON.stringify(customColumns));
         }
 
         // --- Custom UI Systems (Toasts & PIN) --- //
@@ -385,6 +417,7 @@
             }, 3000);
         }
 
+        // Generic Authentication wrapper
         function authAction(callback) {
             currentAuthCallback = callback;
             const pinModal = document.getElementById('pinModal');
@@ -417,18 +450,31 @@
             if (e.key === 'Enter') submitPin();
         });
 
-        // --- Data Logic --- //
-        function addColumn() {
-            const colName = prompt("Enter the name for the new column (e.g., Status, Email):");
-            if (colName && colName.trim() !== "") {
-                if(customColumns.includes(colName.trim())) {
-                    showToast("Column already exists!", "error");
-                    return;
+        // --- Data Logic (Protected by PIN) --- //
+        function promptAddColumn() {
+            authAction(() => {
+                const colName = prompt("Enter the name for the new column (e.g., Status, Email):");
+                if (colName && colName.trim() !== "") {
+                    if(customColumns.includes(colName.trim())) {
+                        showToast("Column already exists!", "error");
+                        return;
+                    }
+                    customColumns.push(colName.trim());
+                    saveData();
+                    renderTable();
+                    showToast(`Column '${colName}' added successfully!`);
                 }
-                customColumns.push(colName.trim());
-                saveData();
-                renderTable();
-                showToast(`Column '${colName}' added successfully!`);
+            });
+        }
+
+        function deleteSchool(index) {
+            if(confirm("Are you sure you want to permanently delete this entry?")) {
+                authAction(() => {
+                    schools.splice(index, 1);
+                    saveData();
+                    renderTable();
+                    showToast("School deleted successfully!");
+                });
             }
         }
 
@@ -452,18 +498,18 @@
         }
 
         function getManagementBadge(type) {
-            if (type.includes('1-ZP')) return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 shadow-sm border border-emerald-200">${type}</span>`;
-            if (type.includes('2-Private Aided')) return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 shadow-sm border border-blue-200">${type}</span>`;
-            if (type.includes('3-Unaided')) return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 shadow-sm border border-amber-200">${type}</span>`;
-            if (type.includes('4-Self Finance')) return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 shadow-sm border border-purple-200">${type}</span>`;
-            return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 shadow-sm border border-slate-200">${type}</span>`;
+            if (type.includes('1-ZP')) return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-100 text-emerald-800 shadow-sm border border-emerald-200">${type}</span>`;
+            if (type.includes('2-Private Aided')) return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-100 text-blue-800 shadow-sm border border-blue-200">${type}</span>`;
+            if (type.includes('3-Unaided')) return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-100 text-amber-800 shadow-sm border border-amber-200">${type}</span>`;
+            if (type.includes('4-Self Finance')) return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-purple-100 text-purple-800 shadow-sm border border-purple-200">${type}</span>`;
+            return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-800 shadow-sm border border-slate-200">${type}</span>`;
         }
 
         function renderTable() {
             updateStats();
             const searchTerm = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
 
-            // Apply Search filter & Keep track of original index for edits
+            // Apply Search filter
             let displayList = schools
                 .map((s, idx) => ({ ...s, originalIndex: idx }))
                 .filter(s => 
@@ -484,32 +530,32 @@
                 });
             }
 
-            // Build Headers
+            // Build Headers - Removed global whitespace-nowrap to avoid horizontal scroll
             const theadRow = document.getElementById('tableHeadRow');
-            let thHTML = `<th class="px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Sr. No.</th>`;
+            let thHTML = `<th class="px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">Sr. No.</th>`;
             
             const baseCols = [
-                { id: 'udise', label: 'UDISE' },
-                { id: 'schoolName', label: 'School Name' },
-                { id: 'management', label: 'Management' },
-                { id: 'principal', label: 'Principal (HM)' },
-                { id: 'mobile', label: 'Contact' }
+                { id: 'udise', label: 'UDISE', cls: 'whitespace-nowrap' },
+                { id: 'schoolName', label: 'School Name', cls: 'min-w-[180px] max-w-[280px] whitespace-normal break-words' },
+                { id: 'management', label: 'Management', cls: 'whitespace-nowrap' },
+                { id: 'principal', label: 'Principal (HM)', cls: 'min-w-[130px] max-w-[200px] whitespace-normal break-words' },
+                { id: 'mobile', label: 'Contact', cls: 'whitespace-nowrap' }
             ];
 
             baseCols.forEach(col => {
                 const isActive = currentSort.field === col.id;
                 const arrow = isActive ? (currentSort.direction === 'asc' ? ' <i class="fa-solid fa-arrow-up-small ml-1 text-indigo-500"></i>' : ' <i class="fa-solid fa-arrow-down-small ml-1 text-indigo-500"></i>') : ' <i class="fa-solid fa-sort ml-1 text-slate-300 sort-icon group-hover:text-slate-400 transition"></i>';
                 const activeClass = isActive ? 'text-indigo-700 bg-slate-200/50' : 'text-slate-600';
-                thHTML += `<th class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-200/50 transition group select-none whitespace-nowrap ${activeClass}" onclick="sortBy('${col.id}')">${col.label}${arrow}</th>`;
+                thHTML += `<th class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-200/50 transition group select-none ${col.cls} ${activeClass}" onclick="sortBy('${col.id}')">${col.label}${arrow}</th>`;
             });
 
             customColumns.forEach(col => {
-                thHTML += `<th class="px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">${col}</th>`;
+                thHTML += `<th class="px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider min-w-[120px] whitespace-normal break-words">${col}</th>`;
             });
-            thHTML += `<th class="px-4 py-3.5 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider no-print whitespace-nowrap">Actions</th>`;
+            thHTML += `<th class="px-4 py-3.5 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider no-print whitespace-nowrap w-24">Actions</th>`;
             theadRow.innerHTML = `<tr>${thHTML}</tr>`;
 
-            // Build Rows (Grouped by Classes)
+            // Build Rows 
             const tbody = document.getElementById('tableBody');
             const emptyState = document.getElementById('emptyState');
             tbody.innerHTML = '';
@@ -521,44 +567,44 @@
                 emptyState.classList.add('hidden');
                 emptyState.classList.remove('flex');
                 
-                // Group by Class Logic
+                // Group by Class
                 const grouped = {};
                 displayList.forEach(item => {
                     if(!grouped[item.classes]) grouped[item.classes] = [];
                     grouped[item.classes].push(item);
                 });
 
-                let globalCounter = 1; // Continuous numbering across all classes
+                let globalCounter = 1; 
 
                 for (const className in grouped) {
                     const groupHeader = document.createElement('tr');
                     groupHeader.className = "bg-slate-200 border-y border-slate-300 group-header";
-                    groupHeader.innerHTML = `<td colspan="${7 + customColumns.length}" class="px-4 py-2 text-center font-bold text-slate-800 text-sm tracking-wide">${className}</td>`;
+                    groupHeader.innerHTML = `<td colspan="${7 + customColumns.length}" class="px-4 py-2.5 text-center font-bold text-slate-800 text-[13px] tracking-wide">${className}</td>`;
                     tbody.appendChild(groupHeader);
 
                     grouped[className].forEach((item) => {
                         const s = item;
                         let trHTML = `
-                            <td class="px-4 py-3 text-xs font-bold text-slate-400 whitespace-nowrap">${globalCounter++}</td>
-                            <td class="px-4 py-3 text-sm font-mono text-slate-600 whitespace-nowrap">${s.udise}</td>
-                            <td class="px-4 py-3 text-sm font-medium text-slate-900 min-w-[200px]">${s.schoolName}</td>
+                            <td class="px-4 py-3 text-[13px] font-bold text-slate-400 whitespace-nowrap">${globalCounter++}</td>
+                            <td class="px-4 py-3 text-[13px] font-mono text-slate-600 whitespace-nowrap">${s.udise}</td>
+                            <td class="px-4 py-3 text-sm font-medium text-slate-900 min-w-[180px] max-w-[280px] whitespace-normal break-words">${s.schoolName}</td>
                             <td class="px-4 py-3 whitespace-nowrap">${getManagementBadge(s.management)}</td>
-                            <td class="px-4 py-3 text-sm text-slate-700 whitespace-nowrap min-w-[150px]">${s.principal || '-'}</td>
-                            <td class="px-4 py-3 text-sm text-slate-700 whitespace-nowrap">${s.mobile || '-'}</td>
+                            <td class="px-4 py-3 text-[13px] text-slate-700 min-w-[130px] max-w-[200px] whitespace-normal break-words">${s.principal || '-'}</td>
+                            <td class="px-4 py-3 text-[13px] text-slate-700 whitespace-nowrap">${s.mobile || '-'}</td>
                         `;
 
                         // Add Custom Columns
                         customColumns.forEach(col => {
-                            trHTML += `<td class="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">${s.customData && s.customData[col] ? s.customData[col] : '<span class="text-slate-300">-</span>'}</td>`;
+                            trHTML += `<td class="px-4 py-3 text-[13px] text-slate-600 min-w-[120px] whitespace-normal break-words">${s.customData && s.customData[col] ? s.customData[col] : '<span class="text-slate-300">-</span>'}</td>`;
                         });
 
                         // Actions
                         trHTML += `
-                            <td class="px-4 py-3 text-center whitespace-nowrap no-print space-x-2">
-                                <button onclick="authAction(() => openModal(${s.originalIndex}))" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded transition shadow-sm border border-indigo-100" title="Edit">
+                            <td class="px-4 py-3 text-center whitespace-nowrap no-print space-x-1.5 w-24">
+                                <button onclick="openModal(${s.originalIndex})" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded transition shadow-sm border border-indigo-100" title="Edit">
                                     <i class="fa-solid fa-pen text-xs"></i>
                                 </button>
-                                <button onclick="authAction(() => deleteSchool(${s.originalIndex}))" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded transition shadow-sm border border-rose-100" title="Delete">
+                                <button onclick="deleteSchool(${s.originalIndex})" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded transition shadow-sm border border-rose-100" title="Delete">
                                     <i class="fa-solid fa-trash text-xs"></i>
                                 </button>
                             </td>
@@ -622,46 +668,41 @@
             }, 200);
         }
 
-        function deleteSchool(index) {
-            if(confirm("Are you sure you want to permanently delete this entry?")) {
-                schools.splice(index, 1);
-                saveData();
-                renderTable();
-                showToast("School deleted successfully!");
-            }
-        }
-
+        // Form Submit asks for PIN via authAction wrapper
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            const index = parseInt(document.getElementById('editIndex').value);
             
-            const customInputs = document.querySelectorAll('.custom-input');
-            const newCustomData = {};
-            customInputs.forEach(input => {
-                newCustomData[input.getAttribute('data-col')] = input.value.trim();
+            authAction(() => {
+                const index = parseInt(document.getElementById('editIndex').value);
+                
+                const customInputs = document.querySelectorAll('.custom-input');
+                const newCustomData = {};
+                customInputs.forEach(input => {
+                    newCustomData[input.getAttribute('data-col')] = input.value.trim();
+                });
+
+                const newSchool = {
+                    udise: document.getElementById('udise').value.trim(),
+                    schoolName: document.getElementById('schoolName').value.trim(),
+                    classes: document.getElementById('classes').value.trim(),
+                    management: document.getElementById('management').value,
+                    principal: document.getElementById('principal').value.trim(),
+                    mobile: document.getElementById('mobile').value.trim(),
+                    customData: newCustomData
+                };
+
+                if (index === -1) {
+                    schools.push(newSchool);
+                    showToast("New school added successfully!");
+                } else {
+                    schools[index] = newSchool;
+                    showToast("School details updated!");
+                }
+
+                saveData();
+                renderTable();
+                closeModal();
             });
-
-            const newSchool = {
-                udise: document.getElementById('udise').value.trim(),
-                schoolName: document.getElementById('schoolName').value.trim(),
-                classes: document.getElementById('classes').value.trim(),
-                management: document.getElementById('management').value,
-                principal: document.getElementById('principal').value.trim(),
-                mobile: document.getElementById('mobile').value.trim(),
-                customData: newCustomData
-            };
-
-            if (index === -1) {
-                schools.push(newSchool);
-                showToast("New school added successfully!");
-            } else {
-                schools[index] = newSchool;
-                showToast("School details updated!");
-            }
-
-            saveData();
-            renderTable();
-            closeModal();
         });
 
         // Google Sheets Webhook Sync 
@@ -705,4 +746,3 @@
     </script>
 </body>
 </html>
-```
