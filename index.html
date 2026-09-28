@@ -1,335 +1,662 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>School Details Management</title>
+    <title>EduAdmin - Advanced School Management Portal</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        
+        /* Custom Scrollbar for better UI */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Toast Animation */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-animate { animation: slideInRight 0.3s ease-out forwards; }
+
         /* A4 PDF Print Styles */
         @media print {
-            body {
-                background-color: white;
-                padding: 0;
-                margin: 0;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .print-container {
-                width: 100%;
-                padding: 0;
-            }
-            @page {
-                size: A4 portrait;
-                margin: 10mm;
-            }
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            th, td {
-                border: 1px solid #333 !important;
-                padding: 4px !important;
-                font-size: 10px !important;
-                text-align: left;
-                color: black !important;
-            }
-            h1 {
-                font-size: 16px !important;
-                text-align: center;
-                margin-bottom: 10px;
-                color: black !important;
-            }
-            .group-header {
-                background-color: #e5e7eb !important;
-                font-weight: bold;
-                text-align: center;
-            }
+            body { background-color: white; padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+            .print-container { width: 100%; padding: 0; margin: 0; }
+            .sidebar, .topbar { display: none !important; }
+            .main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; }
+            
+            @page { size: A4 landscape; margin: 10mm; }
+            
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #333 !important; padding: 6px !important; font-size: 10px !important; text-align: left; color: black !important; }
+            th { background-color: #e5e7eb !important; -webkit-print-color-adjust: exact; }
+            h1 { font-size: 18px !important; text-align: center; margin-bottom: 10px; color: black !important; }
+            .sort-icon { display: none !important; }
+            .badge { border: none !important; background: transparent !important; color: black !important; padding: 0 !important; font-weight: normal !important; }
+            .group-header { background-color: #e5e7eb !important; font-weight: bold; text-align: center; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans p-4 print-container">
+<body class="text-slate-800 h-screen overflow-hidden flex print-container">
 
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-6 border-b pb-4">
-            <h1 class="text-3xl font-bold text-slate-700">शाळा आणि मुख्याध्यापक यादी (Ambajogai)</h1>
-            <div class="no-print space-x-3">
-                <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition">
-                    + Add New School
-                </button>
-                <button onclick="window.print()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition">
-                    🖨️ Print / Save A4 PDF
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col h-full transition-all duration-300 no-print sidebar hidden md:flex z-20 shrink-0">
+        <div class="h-16 flex items-center px-6 font-bold text-xl text-white tracking-wider border-b border-slate-800 bg-slate-950 shadow-sm">
+            <i class="fa-solid fa-graduation-cap text-indigo-500 mr-3"></i> EduAdmin
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 bg-indigo-600/10 text-indigo-400 border-r-4 border-indigo-500 hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-chart-pie w-6"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-solid fa-school w-6"></i> School Directory
+                    </a>
+                </li>
+                <li class="pt-4 mt-4 border-t border-slate-800">
+                    <div class="px-6 text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">System Admin</div>
+                    <a href="#" class="flex items-center px-6 py-3 hover:bg-slate-800 hover:text-white transition">
+                        <i class="fa-solid fa-shield-halved w-6"></i> Access Control
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+            &copy; 2026 Edu Portal
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-screen overflow-hidden main-content bg-slate-50 relative w-full">
+        
+        <!-- Topbar -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 no-print topbar z-10 shadow-sm shrink-0">
+            <div class="flex items-center">
+                <h2 class="text-lg font-semibold text-slate-800 hidden sm:block">अंबाजोगाई: शाळांची गटवार यादी</h2>
+                <h2 class="text-lg font-semibold text-slate-800 sm:hidden">EduAdmin</h2>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative hidden sm:block">
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchInput" onkeyup="renderTable()" placeholder="Search schools, UDISE..." class="pl-10 pr-4 py-2 border border-slate-300 rounded-full text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-64 bg-slate-50 transition-all">
+                </div>
+                <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+                <div class="flex items-center cursor-pointer hover:bg-slate-50 p-1 rounded transition">
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=6366f1&color=fff" alt="Admin" class="w-8 h-8 rounded-full border border-slate-200">
+                    <span class="ml-2 text-sm font-medium text-slate-700 hidden md:block">Admin User</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+            
+            <!-- Dashboard Stats Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 no-print">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center justify-between transition hover:shadow-md">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">Total Schools</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1" id="statTotal">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 text-xl">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center justify-between transition hover:shadow-md">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">Zilla Parishad (ZP)</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1" id="statZp">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 text-xl">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center justify-between transition hover:shadow-md">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">Private / Self Finance</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1" id="statPvt">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 text-xl">
+                        <i class="fa-solid fa-landmark-flag"></i>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center justify-between transition hover:shadow-md">
+                    <div>
+                        <p class="text-sm font-medium text-slate-500">Custom Columns</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1" id="statCols">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 text-xl">
+                        <i class="fa-solid fa-table-columns"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toolbar Controls -->
+            <div class="bg-white p-4 rounded-t-xl border-b border-slate-200 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 no-print shadow-sm">
+                <div class="flex items-center w-full xl:w-auto">
+                    <div class="relative w-full xl:w-80">
+                        <i class="fa-solid fa-link absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="gasUrl" placeholder="Paste Google Script Web App URL..." class="pl-9 pr-4 py-2 border border-slate-300 text-sm rounded-l-lg w-full outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-slate-50">
+                    </div>
+                    <button id="syncBtn" onclick="syncToGoogleSheets()" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-r-lg shadow-sm transition flex items-center whitespace-nowrap text-sm font-medium border border-slate-800">
+                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Sync
+                    </button>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
+                    <button onclick="authAction(addColumn)" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg shadow-sm transition flex items-center text-sm font-medium">
+                        <i class="fa-solid fa-plus text-indigo-500 mr-2"></i> Add Column
+                    </button>
+                    <button onclick="authAction(() => openModal(-1))" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-sm transition flex items-center text-sm font-medium">
+                        <i class="fa-solid fa-school mr-2"></i> Add School
+                    </button>
+                    <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow-sm transition flex items-center text-sm font-medium">
+                        <i class="fa-solid fa-file-pdf mr-2"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Table Container -->
+            <div class="bg-white rounded-b-xl shadow-sm border border-slate-200 border-t-0 overflow-hidden flex flex-col" style="max-height: calc(100vh - 340px); min-height: 400px;">
+                <div class="overflow-auto flex-1 relative">
+                    <table class="min-w-full divide-y divide-slate-200 text-sm w-full">
+                        <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm" id="tableHeadRow">
+                            <!-- Headers dynamically generated -->
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-100 bg-white">
+                            <!-- Rows dynamically generated -->
+                        </tbody>
+                    </table>
+                    
+                    <!-- Empty State -->
+                    <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-slate-500 absolute inset-0 bg-white z-0">
+                        <i class="fa-solid fa-folder-open text-5xl mb-4 text-slate-300"></i>
+                        <p class="text-lg font-semibold text-slate-700">No schools found</p>
+                        <p class="text-sm mt-1">Try adjusting your search query or add a new school.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- School Add/Edit Modal -->
+    <div id="schoolModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center no-print z-50 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto transform transition-all">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-5">
+                <h2 id="modalTitle" class="text-xl font-bold text-slate-800 flex items-center">
+                    <i class="fa-solid fa-pen-to-square text-indigo-500 mr-2"></i> <span>School Details</span>
+                </h2>
+                <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
-        </div>
-
-        <!-- Data Table -->
-        <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-slate-200 mb-10">
-            <table class="min-w-full divide-y divide-slate-200 text-sm">
-                <thead class="bg-slate-100">
-                    <tr>
-                        <th class="px-4 py-3 text-left font-semibold text-slate-600">UDISE</th>
-                        <th class="px-4 py-3 text-left font-semibold text-slate-600">School Name</th>
-                        <th class="px-4 py-3 text-left font-semibold text-slate-600">Management Type</th>
-                        <th class="px-4 py-3 text-left font-semibold text-slate-600">Principal</th>
-                        <th class="px-4 py-3 text-left font-semibold text-slate-600">Mobile</th>
-                        <th class="px-4 py-3 text-center font-semibold text-slate-600 w-24 no-print">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody" class="divide-y divide-slate-200">
-                    <!-- Rows will be populated by JavaScript grouped by classes -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Add / Edit Modal -->
-    <div id="schoolModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center no-print z-50">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
-            <h2 id="modalTitle" class="text-xl font-bold mb-4 text-slate-700">Add New School</h2>
             
-            <form id="schoolForm" class="space-y-4">
+            <form id="schoolForm" class="space-y-5">
                 <input type="hidden" id="editIndex" value="-1">
                 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">UDISE Code</label>
-                        <input type="text" id="udise" required class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">UDISE Code <span class="text-red-500">*</span></label>
+                        <input type="text" id="udise" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Management Type</label>
-                        <select id="management" required class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
-                            <option value="Zilla Parishad">Zilla Parishad</option>
-                            <option value="Private/Other">Private/Other</option>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Management Type <span class="text-red-500">*</span></label>
+                        <select id="management" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
+                            <option value="" disabled selected>Select Management Type</option>
+                            <option value="1-ZP">1-ZP</option>
+                            <option value="2-Private Aided">2-Private Aided</option>
+                            <option value="3-Unaided">3-Unaided</option>
+                            <option value="4-Self Finance">4-Self Finance</option>
+                            <option value="0-GOVT">0-GOVT</option>
                         </select>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-600 mb-1">School Name</label>
-                    <input type="text" id="schoolName" required class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">School Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="schoolName" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-slate-600 mb-1">Classes (Group Name)</label>
-                    <input type="text" id="classes" placeholder="e.g., इयत्ता १ ते ४ (Class 1 to 4)" required class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Category (Classes) <span class="text-red-500">*</span></label>
+                    <input type="text" id="classes" placeholder="e.g., इयत्ता १ ते ४ (Class 1 to 4)" required class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Principal Name</label>
-                        <input type="text" id="principal" class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">HM Name (Principal)</label>
+                        <input type="text" id="principal" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Mobile Number</label>
-                        <input type="text" id="mobile" class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">HM Contact Number</label>
+                        <input type="text" id="mobile" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white">
                     </div>
                 </div>
 
-                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded transition">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition">Save Details</button>
+                <!-- Custom Fields Injected Here -->
+                <div id="customFieldsContainer" class="border-t border-slate-100 pt-5 grid grid-cols-1 md:grid-cols-2 gap-5 hidden"></div>
+
+                <div class="flex justify-end space-x-3 pt-6 border-t border-slate-100">
+                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-lg transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md transition flex items-center">
+                        <i class="fa-solid fa-check mr-2"></i> Save Details
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Custom PIN Auth Modal -->
+    <div id="pinModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm hidden items-center justify-center no-print z-[60]">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center transform transition-all">
+            <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500 text-2xl">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Admin Authentication</h3>
+            <p class="text-sm text-slate-500 mb-6">Enter secure PIN to proceed. (Hint: 1234)</p>
+            
+            <input type="password" id="pinInput" placeholder="••••" maxlength="4" class="w-full text-center tracking-[0.5em] text-3xl font-bold border border-slate-300 rounded-lg px-4 py-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition mb-6 bg-slate-50">
+            
+            <div class="flex space-x-3">
+                <button onclick="closePinModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition">Cancel</button>
+                <button onclick="submitPin()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-md transition">Unlock</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-[70] flex flex-col space-y-3 no-print"></div>
+
     <script>
-        // Full Initial Dataset loaded from the provided PDF details
+        const ADMIN_PIN = "1234"; // Setup Admin PIN
+        
+        let customColumns = []; 
+        let currentSort = { field: null, direction: 'asc' };
+        let currentAuthCallback = null; 
+
+        // Full dataset exactly extracted from "मुख्याध्यापक यादी_2.pdf"
         let schools = [
-            {"schoolName": "जि.प.प्रा.शा. क्र. २, अंबाजोगाई", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270101613", "principal": "बळीराम शिवदास आकुसकर", "mobile": "9011999904", "management": "Zilla Parishad"},
-            {"schoolName": "मिलिया प्रा. शा. अंबा", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270101620", "principal": "SHAIKH JAMEEL NAWAB", "mobile": "9960454571", "management": "Private/Other"},
-            {"schoolName": "नारायणा वर्ल्ड स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270101695", "principal": "Thorat G P", "mobile": "8329811192", "management": "Private/Other"},
-            {"schoolName": "जि.प.प्रा.शा. साकुड (मराठी)", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270102401", "principal": "अंगद कोंडीबा घुले", "mobile": "9822373937", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. भीमाई वस्ती", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270102503", "principal": "वंदना तुकाराम उजगरे", "mobile": "9552983384", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. २", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270102601", "principal": "संजय हणमंतराव कचकलवार", "mobile": "9284746414", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. मांडवा तांडा", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270102801", "principal": "संजय ज्ञानोबा पाडोळे", "mobile": "7020929833", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. नागझरी वसाहत", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103001", "principal": "बालासाहेब व्यंकटराव कातळे", "mobile": "8999022483", "management": "Zilla Parishad"},
-            {"schoolName": "कै. दादाराव कराड प्रा. शा. नागझरी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103002", "principal": "KARAD RAMRAJE NARAYAN", "mobile": "9730035874", "management": "Private/Other"},
-            {"schoolName": "जि.प.प्रा.शा. सह्याद्री नगर शेपवाडी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103102", "principal": "अनिता सदाशिव नखाते", "mobile": "9403356595", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. वरवटी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103301", "principal": "ज्योतीबाई देवीदासराव शिंदे", "mobile": "9403645467", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. उघडे वस्ती (वरवटी)", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103303", "principal": "शोभा अंगदराव चाटे", "mobile": "8999768368", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. तलाव पाटी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103401", "principal": "मनीषा धोंडोपंत चिंचोलीकर", "mobile": "9420194266", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. गिरवली आपेट", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103701", "principal": "सुनिल आनंदराव फुलेवार", "mobile": "9423733945", "management": "Zilla Parishad"},
-            {"schoolName": "खोलेश्वर जीनियस सीबीएससी स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270100109", "principal": "Pratibha Ankush Shinde", "mobile": "9975791303", "management": "Private/Other"},
-            {"schoolName": "छत्रपती संभाजी राजे ग्लोबल स्कूल आणि ज्युनियर कॉलेज जोगाईवाडी", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270101688", "principal": "Gangane Shashikala Nagorao", "mobile": "8788801400", "management": "Private/Other"},
-            {"schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. १", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270102501", "principal": "उत्तम बाबुराव डोंगरे", "mobile": "9689008389", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. ३", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270102502", "principal": "मंजुषा भीमाशंकर जिडगे", "mobile": "9561941714", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. पोलेवाडी", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270102901", "principal": "राजेसाहेब वैजनाथराव सोमवंशी", "mobile": "7020708970", "management": "Zilla Parishad"},
-            {"schoolName": "जि. प. प्रा.शा. गोल्टावस्ती", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270103502", "principal": "शालन नागनाथ जोगदंड", "mobile": "9763233793", "management": "Zilla Parishad"},
-            {"schoolName": "श्री साई समर्थ प्रा. शा.", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270102405", "principal": "उपलब्ध नाही", "mobile": "उपलब्ध नाही", "management": "Private/Other"},
-            {"schoolName": "सी.पी.एस. रविवार पेठ", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101612", "principal": "इंद्रजित शिवाजीराव डांगे", "mobile": "9403023319", "management": "Private/Other"},
-            {"schoolName": "कै. देवराव बालाजी गणगे योगेश्वरी नूतन प्राथमिक विभाग अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101618", "principal": "KHANDERAO BHAGWANRAO NANDGAONKAR", "mobile": "9881638496", "management": "Private/Other"},
-            {"schoolName": "नेताजी सुभाषचंद्र प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101619", "principal": "Magar RB", "mobile": "9421946215", "management": "Private/Other"},
-            {"schoolName": "खोलेश्वर प्रा. शा. अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101626", "principal": "Shivaji Angad Hendge", "mobile": "9421375441", "management": "Private/Other"},
-            {"schoolName": "उर्दू प्रा. शा. रविवार पेठ अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101628", "principal": "Qureshi Mohammed Ilyasuddin Salimuddin", "mobile": "9422742930", "management": "Private/Other"},
-            {"schoolName": "न्यू इंग्लिश प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101629", "principal": "Mr Bhasme Mahesh Marutirao", "mobile": "9403645496", "management": "Private/Other"},
-            {"schoolName": "घाट नागनाथ प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101633", "principal": "SOLANKE SANDHYA UTTAMRAO", "mobile": "8830773269", "management": "Private/Other"},
-            {"schoolName": "श्री व्यंकटेश विद्या मंदिर प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101660", "principal": "Chaudhari SG", "mobile": "8805044747", "management": "Private/Other"},
-            {"schoolName": "जि.प.प्रा.शा. मांडवा पठाण", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270102701", "principal": "बापूराव राघुआप्पा धारेकर", "mobile": "7020752753", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. शेपवाडी", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270103101", "principal": "शैलजा उत्तमराव जोशी", "mobile": "9403882075", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. पिंपळा धायगुडा (मराठी)", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270103201", "principal": "संजीव कचरू उमाप", "mobile": "9284023434", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. पिंपळा धायगुडा (उर्दू)", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270103203", "principal": "सय्यदा हिना सय्यद सरफराजोद्दीन", "mobile": "8600504215", "management": "Zilla Parishad"},
-            {"schoolName": "जि.प.प्रा.शा. अंबलवाडी", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270103501", "principal": "आनंद पांडुरंग सिरसाट", "mobile": "9850940078", "management": "Zilla Parishad"},
-            {"schoolName": "सोमेश्वर उर्दू प्राथमिक शाळा पिंपळा धायगुडा अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270105504", "principal": "Pathan Sartaj Khan Razzak Khan", "mobile": "9767116668", "management": "Private/Other"},
-            {"schoolName": "जिजाऊ स्कूल भगवानबाबा चौक अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270100105", "principal": "Londhal DA", "mobile": "9405247008", "management": "Private/Other"},
-            {"schoolName": "नूरजहाँ उर्दू प्राथमिक शाळा अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270101623", "principal": "FAIZ MOOSA SAYYED", "mobile": "9028891469", "management": "Private/Other"},
-            {"schoolName": "सुलावंतीबाई बाळासाहेब शिंदे प्रा. शा. इंग्लिश अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270101685", "principal": "Bade Rekha Subhash", "mobile": "9404121272", "management": "Private/Other"},
-            {"schoolName": "जि.प.प्रा.शा. साकुड (उर्दू)", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270102404", "principal": "आरिफ अहमद अब्दुल रशीद शेख", "mobile": "9405292799", "management": "Zilla Parishad"},
-            {"schoolName": "तुकाराम पाटील प्रा. शा. गिरवली", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270103802", "principal": "Gangane Anant Satwaram", "mobile": "9421913422", "management": "Private/Other"},
-            {"schoolName": "जिजाऊ इंटरनॅशनल स्कूल गिरवली (बी)", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270103803", "principal": "Apet S B", "mobile": "9422773141", "management": "Private/Other"},
-            {"schoolName": "प्रमोदजी महाजन न्यू इंग्लिश स्कूल", "classes": "इयत्ता १ ते १० (Class 1 to 10)", "udise": "27270101669", "principal": "Dr Yogesh Subhashrao Kulkarni", "mobile": "9422745733", "management": "Private/Other"},
-            {"schoolName": "जि.प.हा.स्कू. गिरवली", "classes": "इयत्ता १ ते १० (Class 1 to 10)", "udise": "27270103801", "principal": "Ravindra Deogaonkar", "mobile": "9405662166", "management": "Zilla Parishad"},
-            {"schoolName": "मुक्तांगण विद्यालय गिरवली रोड अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270100107", "principal": "Shinde BV", "mobile": "9422773141", "management": "Private/Other"},
-            {"schoolName": "विझडम इंग्लिश स्कूल ज्युनियर कॉलेज अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270100110", "principal": "Shaikh Ayesha Kirmani Naseer", "mobile": "9403881891", "management": "Private/Other"},
-            {"schoolName": "स्कॉलर्स एज्युकेशन पॅलेस अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270100111", "principal": "PATHAN ARSHAD", "mobile": "8380921212", "management": "Private/Other"},
-            {"schoolName": "न्यू विजन इंग्लिश स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270101654", "principal": "M Prashant Kumar", "mobile": "9665746911", "management": "Private/Other"},
-            {"schoolName": "एरा इंटरनॅशनल स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270101690", "principal": "Deshmukh Matin Ghulamrasoolatin", "mobile": "9730668387", "management": "Private/Other"},
-            {"schoolName": "सरस्वती पब्लिक स्कूल नागझरी", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270103003", "principal": "RAUT SS", "mobile": "9730035872", "management": "Private/Other"},
-            {"schoolName": "प्रेषिता इंटरनॅशनल स्कूल आणि ज्युनियर कॉलेज", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270103702", "principal": "उपलब्ध नाही", "mobile": "उपलब्ध नाही", "management": "Private/Other"},
-            {"schoolName": "डॉ. राम भालचंद्र हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101615", "principal": "Awad Sunil Premraj", "mobile": "9422931408", "management": "Private/Other"},
-            {"schoolName": "योगेश्वरी नूतन हायस्कूल अंबा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101635", "principal": "Shrimati PATHAK APARNA RAOSAHEB", "mobile": "9403927545", "management": "Private/Other"},
-            {"schoolName": "श्रीमती गोदावरीबाई कुंकुलोळ योगेश्वरी कन्या हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101636", "principal": "MEENA SURESH KULKARNI", "mobile": "8459332551", "management": "Private/Other"},
-            {"schoolName": "नेताजी सुभाष हायस्कूल अंबा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101639", "principal": "Shinde Satish Bhagvat", "mobile": "9421344616", "management": "Private/Other"},
-            {"schoolName": "खोलेश्वर हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101643", "principal": "Anantram sundarrao Kople", "mobile": "9403571582", "management": "Private/Other"},
-            {"schoolName": "कै. दादाराव कराड हायस्कूल शेपवाडी", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101648", "principal": "KARAD RAMRAJE NARAYAN", "mobile": "9730035874", "management": "Private/Other"},
-            {"schoolName": "सरस्वती हायस्कूल साकुड", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270102402", "principal": "Tambade GS", "mobile": "7709196103", "management": "Private/Other"},
-            {"schoolName": "वेनगंगा हायस्कूल मांडवा पठाण", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270102702", "principal": "Shri Jadhav Rajendra Ramkaran", "mobile": "9028987610", "management": "Private/Other"},
-            {"schoolName": "अल्लाम सिद्दीकी अल. उर्दू हायस्कूल पिंपळा धायगुडा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270103202", "principal": "Shaikh Nabee Babamiya", "mobile": "9850646724", "management": "Private/Other"},
-            {"schoolName": "वसंतराव नाईक विद्यालय वरवटी", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270103302", "principal": "MUNDE SS", "mobile": "9421277292", "management": "Private/Other"},
-            {"schoolName": "जोधाप्रसाद मोदी माध्यमिक व उच्च माध्यमिक शाळा अंबाजोगाई", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "udise": "27270101614", "principal": "Munje VA", "mobile": "9421341688", "management": "Private/Other"},
-            {"schoolName": "मिलिया हायस्कूल अंबा", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "udise": "27270101640", "principal": "MOHAMMAD IRSHAD AHMED", "mobile": "9284931302", "management": "Private/Other"},
-            {"schoolName": "श्री व्यंकटेश विद्या मंदिर हायस्कूल अंबा", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "udise": "27270101661", "principal": "Shri KAKADE S B", "mobile": "8805044747", "management": "Private/Other"},
-            {"schoolName": "छत्रपती संभाजी राजे ग्लोबल स्कूल जोगाईवाडी", "classes": "इयत्ता ६ ते १२ (Class 6 to 12)", "udise": "27270101305", "principal": "Gangane Shashikala Nagorao", "mobile": "8788801400", "management": "Private/Other"},
-            {"schoolName": "मन्सूर हायस्कूल रविवार पेठ अंबाजोगाई", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "udise": "27270101647", "principal": "SAYYED MERAJ AHMAD MOOSA", "mobile": "9822283894", "management": "Private/Other"},
-            {"schoolName": "सावरकर विद्यालय पिंपळा धायगुडा", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "udise": "27270101649", "principal": "Annasaheb Mukundrao Hulge", "mobile": "9767801101", "management": "Private/Other"},
-            {"schoolName": "न्यू इंग्लिश हायस्कूल गुरुवार पेठ अंबाजोगाई", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "udise": "27270101653", "principal": "BHASME MM", "mobile": "9890038251", "management": "Private/Other"}
+            {"udise": "27270101613", "schoolName": "जि.प.प्रा.शा. क्र. २, अंबाजोगाई", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "बळीराम शिवदास आकुसकर", "mobile": "9011999904", "customData": {}},
+            {"udise": "27270101620", "schoolName": "मिलिया प्रा. शा. अंबा", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "2-Private Aided", "principal": "SHAIKH JAMEEL NAWAB", "mobile": "9960454571", "customData": {}},
+            {"udise": "27270101695", "schoolName": "नारायणा वर्ल्ड स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "4-Self Finance", "principal": "Thorat G P", "mobile": "8329811192", "customData": {}},
+            {"udise": "27270102401", "schoolName": "जि.प.प्रा.शा. साकुड (मराठी)", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "अंगद कोंडीबा घुले", "mobile": "9822373937", "customData": {}},
+            {"udise": "27270102503", "schoolName": "जि.प.प्रा.शा. भीमाई वस्ती", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "वंदना तुकाराम उजगरे", "mobile": "9552983384", "customData": {}},
+            {"udise": "27270102601", "schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. २", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "संजय हणमंतराव कचकलवार", "mobile": "9284746414", "customData": {}},
+            {"udise": "27270102801", "schoolName": "जि.प.प्रा.शा. मांडवा तांडा", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "संजय ज्ञानोबा पाडोळे", "mobile": "7020929833", "customData": {}},
+            {"udise": "27270103001", "schoolName": "जि.प.प्रा.शा. नागझरी वसाहत", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "बालासाहेब व्यंकटराव कातळे", "mobile": "8999022483", "customData": {}},
+            {"udise": "27270103002", "schoolName": "कै. दादाराव कराड प्रा. शा. नागझरी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "3-Unaided", "principal": "KARAD RAMRAJE NARAYAN", "mobile": "9730035874", "customData": {}},
+            {"udise": "27270103102", "schoolName": "जि.प.प्रा.शा. सह्याद्री नगर शेपवाडी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "अनिता सदाशिव नखाते", "mobile": "9403356595", "customData": {}},
+            {"udise": "27270103301", "schoolName": "जि.प.प्रा.शा. वरवटी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "ज्योतीबाई देवीदासराव शिंदे", "mobile": "9403645467", "customData": {}},
+            {"udise": "27270103303", "schoolName": "जि.प.प्रा.शा. उघडे वस्ती (वरवटी)", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "शोभा अंगदराव चाटे", "mobile": "8999768368", "customData": {}},
+            {"udise": "27270103401", "schoolName": "जि.प.प्रा.शा. तलाव पाटी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "मनीषा धोंडोपंत चिंचोलीकर", "mobile": "9420194266", "customData": {}},
+            {"udise": "27270103701", "schoolName": "जि.प.प्रा.शा. गिरवली आपेट", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "management": "1-ZP", "principal": "सुनिल आनंदराव फुलेवार", "mobile": "9423733945", "customData": {}},
+            {"udise": "27270100109", "schoolName": "खोलेश्वर जीनियस सीबीएससी स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "4-Self Finance", "principal": "Pratibha Ankush Shinde", "mobile": "9975791303", "customData": {}},
+            {"udise": "27270101688", "schoolName": "छत्रपती संभाजी राजे ग्लोबल स्कूल आणि ज्युनियर कॉलेज जोगाईवाडी", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "4-Self Finance", "principal": "Gangane Shashikala Nagorao", "mobile": "8788801400", "customData": {}},
+            {"udise": "27270102501", "schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. १", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "1-ZP", "principal": "उत्तम बाबुराव डोंगरे", "mobile": "9689008389", "customData": {}},
+            {"udise": "27270102502", "schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. ३", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "1-ZP", "principal": "मंजुषा भीमाशंकर जिडगे", "mobile": "9561941714", "customData": {}},
+            {"udise": "27270102901", "schoolName": "जि.प.प्रा.शा. पोलेवाडी", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "1-ZP", "principal": "राजेसाहेब वैजनाथराव सोमवंशी", "mobile": "7020708970", "customData": {}},
+            {"udise": "27270103502", "schoolName": "जि. प. प्रा.शा. गोल्टावस्ती", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "management": "1-ZP", "principal": "शालन नागनाथ जोगदंड", "mobile": "9763233793", "customData": {}},
+            {"udise": "27270102405", "schoolName": "श्री साई समर्थ प्रा. शा.", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "4-Self Finance", "principal": "उपलब्ध नाही", "mobile": "उपलब्ध नाही", "customData": {}},
+            {"udise": "27270101612", "schoolName": "सी.पी.एस. रविवार पेठ", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "इंद्रजित शिवाजीराव डांगे", "mobile": "9403023319", "customData": {}},
+            {"udise": "27270101618", "schoolName": "कै. देवराव बालाजी गणगे योगेश्वरी नूतन प्राथमिक विभाग अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "KHANDERAO BHAGWANRAO NANDGAONKAR", "mobile": "9881638496", "customData": {}},
+            {"udise": "27270101619", "schoolName": "नेताजी सुभाषचंद्र प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "Magar RB", "mobile": "9421946215", "customData": {}},
+            {"udise": "27270101626", "schoolName": "खोलेश्वर प्रा. शा. अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "Shivaji Angad Hendge", "mobile": "9421375441", "customData": {}},
+            {"udise": "27270101628", "schoolName": "उर्दू प्रा. शा. रविवार पेठ अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "Qureshi Mohammed Ilyasuddin Salimuddin", "mobile": "9422742930", "customData": {}},
+            {"udise": "27270101629", "schoolName": "न्यू इंग्लिश प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "4-Self Finance", "principal": "Mr Bhasme Mahesh Marutirao", "mobile": "9403645496", "customData": {}},
+            {"udise": "27270101633", "schoolName": "घाट नागनाथ प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "SOLANKE SANDHYA UTTAMRAO", "mobile": "8830773269", "customData": {}},
+            {"udise": "27270101660", "schoolName": "श्री व्यंकटेश विद्या मंदिर प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "Chaudhari SG", "mobile": "8805044747", "customData": {}},
+            {"udise": "27270102701", "schoolName": "जि.प.प्रा.शा. मांडवा पठाण", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "बापूराव राघुआप्पा धारेकर", "mobile": "7020752753", "customData": {}},
+            {"udise": "27270103101", "schoolName": "जि.प.प्रा.शा. शेपवाडी", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "शैलजा उत्तमराव जोशी", "mobile": "9403882075", "customData": {}},
+            {"udise": "27270103201", "schoolName": "जि.प.प्रा.शा. पिंपळा धायगुडा (मराठी)", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "संजीव कचरू उमाप", "mobile": "9284023434", "customData": {}},
+            {"udise": "27270103203", "schoolName": "जि.प.प्रा.शा. पिंपळा धायगुडा (उर्दू)", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "सय्यदा हिना सय्यद सरफराजोद्दीन", "mobile": "8600504215", "customData": {}},
+            {"udise": "27270103501", "schoolName": "जि.प.प्रा.शा. अंबलवाडी", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "1-ZP", "principal": "आनंद पांडुरंग सिरसाट", "mobile": "9850940078", "customData": {}},
+            {"udise": "27270105504", "schoolName": "सोमेश्वर उर्दू प्राथमिक शाळा पिंपळा धायगुडा अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "management": "2-Private Aided", "principal": "Pathan Sartaj Khan Razzak Khan", "mobile": "9767116668", "customData": {}},
+            {"udise": "27270100105", "schoolName": "जिजाऊ स्कूल भगवानबाबा चौक अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "4-Self Finance", "principal": "Londhal DA", "mobile": "9405247008", "customData": {}},
+            {"udise": "27270101623", "schoolName": "नूरजहाँ उर्दू प्राथमिक शाळा अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "2-Private Aided", "principal": "FAIZ MOOSA SAYYED", "mobile": "9028891469", "customData": {}},
+            {"udise": "27270101685", "schoolName": "सुलावंतीबाई बाळासाहेब शिंदे प्रा. शा. इंग्लिश अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "4-Self Finance", "principal": "Bade Rekha Subhash", "mobile": "9404121272", "customData": {}},
+            {"udise": "27270102404", "schoolName": "जि.प.प्रा.शा. साकुड (उर्दू)", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "1-ZP", "principal": "आरिफ अहमद अब्दुल रशीद शेख", "mobile": "9405292799", "customData": {}},
+            {"udise": "27270103802", "schoolName": "तुकाराम पाटील प्रा. शा. गिरवली", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "2-Private Aided", "principal": "Gangane Anant Satwaram", "mobile": "9421913422", "customData": {}},
+            {"udise": "27270103803", "schoolName": "जिजाऊ इंटरनॅशनल स्कूल गिरवली (बी)", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "management": "4-Self Finance", "principal": "Apet S B", "mobile": "9422773141", "customData": {}},
+            {"udise": "27270101669", "schoolName": "प्रमोदजी महाजन न्यू इंग्लिश स्कूल", "classes": "इयत्ता १ ते १० (Class 1 to 10)", "management": "4-Self Finance", "principal": "Dr Yogesh Subhashrao Kulkarni", "mobile": "9422745733", "customData": {}},
+            {"udise": "27270103801", "schoolName": "जि.प.हा.स्कू. गिरवली", "classes": "इयत्ता १ ते १० (Class 1 to 10)", "management": "1-ZP", "principal": "Ravindra Deogaonkar", "mobile": "9405662166", "customData": {}},
+            {"udise": "27270100107", "schoolName": "मुक्तांगण विद्यालय गिरवली रोड अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "Shinde BV", "mobile": "9422773141", "customData": {}},
+            {"udise": "27270100110", "schoolName": "विझडम इंग्लिश स्कूल ज्युनियर कॉलेज अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "Shaikh Ayesha Kirmani Naseer", "mobile": "9403881891", "customData": {}},
+            {"udise": "27270100111", "schoolName": "स्कॉलर्स एज्युकेशन पॅलेस अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "PATHAN ARSHAD", "mobile": "8380921212", "customData": {}},
+            {"udise": "27270101654", "schoolName": "न्यू विजन इंग्लिश स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "M Prashant Kumar", "mobile": "9665746911", "customData": {}},
+            {"udise": "27270101690", "schoolName": "एरा इंटरनॅशनल स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "Deshmukh Matin Ghulamrasoolatin", "mobile": "9730668387", "customData": {}},
+            {"udise": "27270103003", "schoolName": "सरस्वती पब्लिक स्कूल नागझरी", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "RAUT SS", "mobile": "9730035872", "customData": {}},
+            {"udise": "27270103702", "schoolName": "प्रेषिता इंटरनॅशनल स्कूल आणि ज्युनियर कॉलेज", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "management": "4-Self Finance", "principal": "उपलब्ध नाही", "mobile": "उपलब्ध नाही", "customData": {}},
+            {"udise": "27270101615", "schoolName": "डॉ. राम भालचंद्र हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Awad Sunil Premraj", "mobile": "9422931408", "customData": {}},
+            {"udise": "27270101635", "schoolName": "योगेश्वरी नूतन हायस्कूल अंबा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Shrimati PATHAK APARNA RAOSAHEB", "mobile": "9403927545", "customData": {}},
+            {"udise": "27270101636", "schoolName": "श्रीमती गोदावरीबाई कुंकुलोळ योगेश्वरी कन्या हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "MEENA SURESH KULKARNI", "mobile": "8459332551", "customData": {}},
+            {"udise": "27270101639", "schoolName": "नेताजी सुभाष हायस्कूल अंबा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Shinde Satish Bhagvat", "mobile": "9421344616", "customData": {}},
+            {"udise": "27270101643", "schoolName": "खोलेश्वर हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Anantram sundarrao Kople", "mobile": "9403571582", "customData": {}},
+            {"udise": "27270101648", "schoolName": "कै. दादाराव कराड हायस्कूल शेपवाडी", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "3-Unaided", "principal": "KARAD RAMRAJE NARAYAN", "mobile": "9730035874", "customData": {}},
+            {"udise": "27270102402", "schoolName": "सरस्वती हायस्कूल साकुड", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Tambade GS", "mobile": "7709196103", "customData": {}},
+            {"udise": "27270102702", "schoolName": "वेनगंगा हायस्कूल मांडवा पठाण", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Shri Jadhav Rajendra Ramkaran", "mobile": "9028987610", "customData": {}},
+            {"udise": "27270103202", "schoolName": "अल्लाम सिद्दीकी अल. उर्दू हायस्कूल पिंपळा धायगुडा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "Shaikh Nabee Babamiya", "mobile": "9850646724", "customData": {}},
+            {"udise": "27270103302", "schoolName": "वसंतराव नाईक विद्यालय वरवटी", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "management": "2-Private Aided", "principal": "MUNDE SS", "mobile": "9421277292", "customData": {}},
+            {"udise": "27270101614", "schoolName": "जोधाप्रसाद मोदी माध्यमिक व उच्च माध्यमिक शाळा अंबाजोगाई", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "management": "2-Private Aided", "principal": "Munje VA", "mobile": "9421341688", "customData": {}},
+            {"udise": "27270101640", "schoolName": "मिलिया हायस्कूल अंबा", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "management": "2-Private Aided", "principal": "MOHAMMAD IRSHAD AHMED", "mobile": "9284931302", "customData": {}},
+            {"udise": "27270101661", "schoolName": "श्री व्यंकटेश विद्या मंदिर हायस्कूल अंबा", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "management": "2-Private Aided", "principal": "Shri KAKADE S B", "mobile": "8805044747", "customData": {}},
+            {"udise": "27270101305", "schoolName": "छत्रपती संभाजी राजे ग्लोबल स्कूल जोगाईवाडी", "classes": "इयत्ता ६ ते १२ (Class 6 to 12)", "management": "4-Self Finance", "principal": "Gangane Shashikala Nagorao", "mobile": "8788801400", "customData": {}},
+            {"udise": "27270101647", "schoolName": "मन्सूर हायस्कूल रविवार पेठ अंबाजोगाई", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "management": "2-Private Aided", "principal": "SAYYED MERAJ AHMAD MOOSA", "mobile": "9822283894", "customData": {}},
+            {"udise": "27270101649", "schoolName": "सावरकर विद्यालय पिंपळा धायगुडा", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "management": "2-Private Aided", "principal": "Annasaheb Mukundrao Hulge", "mobile": "9767801101", "customData": {}},
+            {"udise": "27270101653", "schoolName": "न्यू इंग्लिश हायस्कूल गुरुवार पेठ अंबाजोगाई", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "management": "4-Self Finance", "principal": "BHASME MM", "mobile": "9890038251", "customData": {}}
         ];
 
-        // Load schools from LocalStorage if they exist, otherwise use initial data
-        const storedSchools = localStorage.getItem('schoolsDataPdf');
-        if (storedSchools) {
-            schools = JSON.parse(storedSchools);
-        }
+        // Load Memory (Local Storage Persistence)
+        if (localStorage.getItem('portalSchoolsV3')) schools = JSON.parse(localStorage.getItem('portalSchoolsV3'));
+        if (localStorage.getItem('portalCustomColsV3')) customColumns = JSON.parse(localStorage.getItem('portalCustomColsV3'));
 
-        // Save data to LocalStorage
         function saveData() {
-            localStorage.setItem('schoolsDataPdf', JSON.stringify(schools));
+            localStorage.setItem('portalSchoolsV3', JSON.stringify(schools));
+            localStorage.setItem('portalCustomColsV3', JSON.stringify(customColumns));
         }
 
-        // Render Table logic - Groups by 'classes' automatically
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+        // --- Custom UI Systems (Toasts & PIN) --- //
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800';
+            const icon = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500 mr-2"></i>' : '<i class="fa-solid fa-triangle-exclamation text-red-500 mr-2"></i>';
+            toast.className = `flex items-center p-4 rounded-lg shadow-lg border ${bgColor} toast-animate min-w-[250px] font-medium text-sm`;
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease-in';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
-            // Group schools by their classes string
-            const groupedSchools = {};
-            schools.forEach((school, index) => {
-                if (!groupedSchools[school.classes]) {
-                    groupedSchools[school.classes] = [];
-                }
-                groupedSchools[school.classes].push({ school, index });
-            });
+        function authAction(callback) {
+            currentAuthCallback = callback;
+            const pinModal = document.getElementById('pinModal');
+            document.getElementById('pinInput').value = '';
+            pinModal.classList.remove('hidden');
+            pinModal.classList.add('flex');
+            setTimeout(() => document.getElementById('pinInput').focus(), 50);
+        }
 
-            // Loop through each group to render headers and rows
-            for (const className in groupedSchools) {
-                // Add group header row
-                const headerTr = document.createElement('tr');
-                headerTr.className = "bg-slate-200 text-slate-800 font-bold group-header border-y-2 border-slate-300";
-                headerTr.innerHTML = `
-                    <td colspan="6" class="px-4 py-3 text-center text-md tracking-wider">${className}</td>
-                `;
-                tbody.appendChild(headerTr);
+        function closePinModal() {
+            const pinModal = document.getElementById('pinModal');
+            pinModal.classList.add('hidden');
+            pinModal.classList.remove('flex');
+            currentAuthCallback = null;
+        }
 
-                // Add school rows for this group
-                groupedSchools[className].forEach(item => {
-                    const school = item.school;
-                    const index = item.index;
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-                    tr.innerHTML = `
-                        <td class="px-4 py-2 font-mono text-slate-700">${school.udise}</td>
-                        <td class="px-4 py-2 font-medium text-slate-800">${school.schoolName}</td>
-                        <td class="px-4 py-2">
-                            <span class="px-2 py-1 rounded text-xs font-semibold ${school.management === 'Zilla Parishad' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800'}">
-                                ${school.management}
-                            </span>
-                        </td>
-                        <td class="px-4 py-2 text-slate-700">${school.principal}</td>
-                        <td class="px-4 py-2 text-slate-700">${school.mobile}</td>
-                        <td class="px-4 py-2 text-center no-print">
-                            <button onclick="editSchool(${index})" class="text-blue-500 hover:text-blue-700 mr-2 font-semibold">Edit</button>
-                            <button onclick="deleteSchool(${index})" class="text-red-500 hover:text-red-700 font-semibold">Delete</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+        function submitPin() {
+            const input = document.getElementById('pinInput').value;
+            if (input === ADMIN_PIN) {
+                closePinModal();
+                if(currentAuthCallback) currentAuthCallback();
+            } else {
+                showToast("Access Denied: Incorrect PIN", "error");
+                document.getElementById('pinInput').value = '';
+                document.getElementById('pinInput').focus();
             }
         }
 
-        // Modal Controls
+        document.getElementById('pinInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') submitPin();
+        });
+
+        // --- Data Logic --- //
+        function addColumn() {
+            const colName = prompt("Enter the name for the new column (e.g., Status, Email):");
+            if (colName && colName.trim() !== "") {
+                if(customColumns.includes(colName.trim())) {
+                    showToast("Column already exists!", "error");
+                    return;
+                }
+                customColumns.push(colName.trim());
+                saveData();
+                renderTable();
+                showToast(`Column '${colName}' added successfully!`);
+            }
+        }
+
+        function sortBy(field) {
+            if (currentSort.field === field) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = field;
+                currentSort.direction = 'asc';
+            }
+            renderTable();
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').innerText = schools.length;
+            const zpCount = schools.filter(s => s.management.includes('1-ZP')).length;
+            const pvtCount = schools.filter(s => !s.management.includes('1-ZP') && !s.management.includes('0-GOVT')).length;
+            document.getElementById('statZp').innerText = zpCount;
+            document.getElementById('statPvt').innerText = pvtCount;
+            document.getElementById('statCols').innerText = customColumns.length;
+        }
+
+        function getManagementBadge(type) {
+            if (type.includes('1-ZP')) return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 shadow-sm border border-emerald-200">${type}</span>`;
+            if (type.includes('2-Private Aided')) return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 shadow-sm border border-blue-200">${type}</span>`;
+            if (type.includes('3-Unaided')) return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 shadow-sm border border-amber-200">${type}</span>`;
+            if (type.includes('4-Self Finance')) return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 shadow-sm border border-purple-200">${type}</span>`;
+            return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 shadow-sm border border-slate-200">${type}</span>`;
+        }
+
+        function renderTable() {
+            updateStats();
+            const searchTerm = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+
+            // Apply Search filter & Keep track of original index for edits
+            let displayList = schools
+                .map((s, idx) => ({ ...s, originalIndex: idx }))
+                .filter(s => 
+                    s.schoolName.toLowerCase().includes(searchTerm) || 
+                    s.udise.toLowerCase().includes(searchTerm) ||
+                    s.principal.toLowerCase().includes(searchTerm) ||
+                    s.management.toLowerCase().includes(searchTerm)
+                );
+
+            // Apply Sort
+            if (currentSort.field) {
+                displayList.sort((a, b) => {
+                    let valA = (a[currentSort.field] || '').toString().toLowerCase();
+                    let valB = (b[currentSort.field] || '').toString().toLowerCase();
+                    if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+                    if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            // Build Headers
+            const theadRow = document.getElementById('tableHeadRow');
+            let thHTML = `<th class="px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Sr. No.</th>`;
+            
+            const baseCols = [
+                { id: 'udise', label: 'UDISE' },
+                { id: 'schoolName', label: 'School Name' },
+                { id: 'management', label: 'Management' },
+                { id: 'principal', label: 'Principal (HM)' },
+                { id: 'mobile', label: 'Contact' }
+            ];
+
+            baseCols.forEach(col => {
+                const isActive = currentSort.field === col.id;
+                const arrow = isActive ? (currentSort.direction === 'asc' ? ' <i class="fa-solid fa-arrow-up-small ml-1 text-indigo-500"></i>' : ' <i class="fa-solid fa-arrow-down-small ml-1 text-indigo-500"></i>') : ' <i class="fa-solid fa-sort ml-1 text-slate-300 sort-icon group-hover:text-slate-400 transition"></i>';
+                const activeClass = isActive ? 'text-indigo-700 bg-slate-200/50' : 'text-slate-600';
+                thHTML += `<th class="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider cursor-pointer hover:bg-slate-200/50 transition group select-none whitespace-nowrap ${activeClass}" onclick="sortBy('${col.id}')">${col.label}${arrow}</th>`;
+            });
+
+            customColumns.forEach(col => {
+                thHTML += `<th class="px-4 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider whitespace-nowrap">${col}</th>`;
+            });
+            thHTML += `<th class="px-4 py-3.5 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider no-print whitespace-nowrap">Actions</th>`;
+            theadRow.innerHTML = `<tr>${thHTML}</tr>`;
+
+            // Build Rows (Grouped by Classes)
+            const tbody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+            tbody.innerHTML = '';
+
+            if (displayList.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+                
+                // Group by Class Logic
+                const grouped = {};
+                displayList.forEach(item => {
+                    if(!grouped[item.classes]) grouped[item.classes] = [];
+                    grouped[item.classes].push(item);
+                });
+
+                let globalCounter = 1; // Continuous numbering across all classes
+
+                for (const className in grouped) {
+                    const groupHeader = document.createElement('tr');
+                    groupHeader.className = "bg-slate-200 border-y border-slate-300 group-header";
+                    groupHeader.innerHTML = `<td colspan="${7 + customColumns.length}" class="px-4 py-2 text-center font-bold text-slate-800 text-sm tracking-wide">${className}</td>`;
+                    tbody.appendChild(groupHeader);
+
+                    grouped[className].forEach((item) => {
+                        const s = item;
+                        let trHTML = `
+                            <td class="px-4 py-3 text-xs font-bold text-slate-400 whitespace-nowrap">${globalCounter++}</td>
+                            <td class="px-4 py-3 text-sm font-mono text-slate-600 whitespace-nowrap">${s.udise}</td>
+                            <td class="px-4 py-3 text-sm font-medium text-slate-900 min-w-[200px]">${s.schoolName}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">${getManagementBadge(s.management)}</td>
+                            <td class="px-4 py-3 text-sm text-slate-700 whitespace-nowrap min-w-[150px]">${s.principal || '-'}</td>
+                            <td class="px-4 py-3 text-sm text-slate-700 whitespace-nowrap">${s.mobile || '-'}</td>
+                        `;
+
+                        // Add Custom Columns
+                        customColumns.forEach(col => {
+                            trHTML += `<td class="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">${s.customData && s.customData[col] ? s.customData[col] : '<span class="text-slate-300">-</span>'}</td>`;
+                        });
+
+                        // Actions
+                        trHTML += `
+                            <td class="px-4 py-3 text-center whitespace-nowrap no-print space-x-2">
+                                <button onclick="authAction(() => openModal(${s.originalIndex}))" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded transition shadow-sm border border-indigo-100" title="Edit">
+                                    <i class="fa-solid fa-pen text-xs"></i>
+                                </button>
+                                <button onclick="authAction(() => deleteSchool(${s.originalIndex}))" class="text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded transition shadow-sm border border-rose-100" title="Delete">
+                                    <i class="fa-solid fa-trash text-xs"></i>
+                                </button>
+                            </td>
+                        `;
+
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-indigo-50/20 transition duration-150 border-b border-slate-100";
+                        tr.innerHTML = trHTML;
+                        tbody.appendChild(tr);
+                    });
+                }
+            }
+        }
+
         const modal = document.getElementById('schoolModal');
         const form = document.getElementById('schoolForm');
 
-        function openModal() {
-            document.getElementById('modalTitle').innerText = "Add New School";
-            form.reset();
-            document.getElementById('editIndex').value = "-1";
+        function openModal(index) {
+            const isEdit = index !== -1;
+            const school = isEdit ? schools[index] : { customData: {} };
+            
+            document.getElementById('modalTitle').innerHTML = isEdit ? '<i class="fa-solid fa-pen-to-square text-indigo-500 mr-2"></i> <span>Edit School Details</span>' : '<i class="fa-solid fa-plus-circle text-indigo-500 mr-2"></i> <span>Add New School</span>';
+            document.getElementById('editIndex').value = index;
+            
+            document.getElementById('udise').value = school.udise || '';
+            document.getElementById('schoolName').value = school.schoolName || '';
+            document.getElementById('classes').value = school.classes || '';
+            document.getElementById('management').value = school.management || '';
+            document.getElementById('principal').value = school.principal || '';
+            document.getElementById('mobile').value = school.mobile || '';
+            
+            const customContainer = document.getElementById('customFieldsContainer');
+            customContainer.innerHTML = '';
+            
+            if(customColumns.length > 0) {
+                customContainer.classList.remove('hidden');
+                customColumns.forEach(col => {
+                    const val = (school.customData && school.customData[col]) ? school.customData[col] : '';
+                    customContainer.innerHTML += `
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">${col}</label>
+                            <input type="text" value="${val}" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition bg-slate-50 focus:bg-white custom-input" data-col="${col}">
+                        </div>
+                    `;
+                });
+            } else {
+                customContainer.classList.add('hidden');
+            }
+
             modal.classList.remove('hidden');
             modal.classList.add('flex');
+            setTimeout(() => { modal.children[0].classList.add('scale-100'); modal.children[0].classList.remove('scale-95', 'opacity-0'); }, 10);
         }
 
         function closeModal() {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            modal.children[0].classList.add('scale-95', 'opacity-0');
+            modal.children[0].classList.remove('scale-100');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 200);
         }
 
-        // Edit Functionality
-        function editSchool(index) {
-            const school = schools[index];
-            document.getElementById('modalTitle').innerText = "Edit School Details";
-            document.getElementById('editIndex').value = index;
-            
-            document.getElementById('udise').value = school.udise;
-            document.getElementById('schoolName').value = school.schoolName;
-            document.getElementById('classes').value = school.classes;
-            document.getElementById('management').value = school.management;
-            document.getElementById('principal').value = school.principal;
-            document.getElementById('mobile').value = school.mobile;
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        // Delete Functionality
         function deleteSchool(index) {
-            if(confirm("Are you sure you want to delete this school's details?")) {
+            if(confirm("Are you sure you want to permanently delete this entry?")) {
                 schools.splice(index, 1);
                 saveData();
                 renderTable();
+                showToast("School deleted successfully!");
             }
         }
 
-        // Form Submit (Save / Update)
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const index = parseInt(document.getElementById('editIndex').value);
+            
+            const customInputs = document.querySelectorAll('.custom-input');
+            const newCustomData = {};
+            customInputs.forEach(input => {
+                newCustomData[input.getAttribute('data-col')] = input.value.trim();
+            });
+
             const newSchool = {
                 udise: document.getElementById('udise').value.trim(),
                 schoolName: document.getElementById('schoolName').value.trim(),
                 classes: document.getElementById('classes').value.trim(),
                 management: document.getElementById('management').value,
                 principal: document.getElementById('principal').value.trim(),
-                mobile: document.getElementById('mobile').value.trim()
+                mobile: document.getElementById('mobile').value.trim(),
+                customData: newCustomData
             };
 
             if (index === -1) {
-                schools.push(newSchool); // Add
+                schools.push(newSchool);
+                showToast("New school added successfully!");
             } else {
-                schools[index] = newSchool; // Update
+                schools[index] = newSchool;
+                showToast("School details updated!");
             }
 
             saveData();
@@ -337,8 +664,45 @@
             closeModal();
         });
 
-        // Initial Render on page load
+        // Google Sheets Webhook Sync 
+        function syncToGoogleSheets() {
+            authAction(() => {
+                const url = document.getElementById("gasUrl").value.trim();
+                if (!url || !url.startsWith("https://script.google.com/")) {
+                    showToast("Paste a valid Google Apps Script Web App URL first", "error");
+                    return;
+                }
+                
+                const btn = document.getElementById("syncBtn");
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Syncing...`;
+                btn.disabled = true;
+                
+                const payload = JSON.stringify({
+                    columns: customColumns,
+                    data: schools
+                });
+
+                fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: payload
+                }).then(() => {
+                    showToast("Data sent to Cloud successfully!");
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                }).catch(err => {
+                    showToast("Network Error during sync", "error");
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                });
+            });
+        }
+
+        // Initialize App
         renderTable();
     </script>
 </body>
 </html>
+```
