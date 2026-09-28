@@ -234,11 +234,11 @@
   }
 
   /* STREAMING_CHUNK:Adding Print CSS for proper PDF generation... */
-  /* ---------- Print Styles ---------- */
+  /* ---------- Print Styles (Bug Fixed) ---------- */
   @media print {
-    body * { visibility: hidden; }
-    #printArea, #printArea * { visibility: visible; }
-    #printArea { position: absolute; left: 0; top: 0; width: 100%; padding: 0; background: #fff; color: #000; font-family: sans-serif; }
+    body > :not(#printArea) { display: none !important; } /* Hides UI components completely to prevent blank pages */
+    
+    #printArea { display: block !important; position: static; width: 100%; padding: 0; background: #fff; color: #000; font-family: sans-serif; }
     
     #printArea h2 { margin: 0 0 5px; font-size: 22px; text-align: center; }
     #printArea .print-sub { text-align: center; font-size: 14px; margin-bottom: 20px; }
@@ -402,7 +402,6 @@ let headerSettings = {
 };
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzGYiFsV-ee7CpNG1uEj9PEQzKuw9W3-BXRBrlm49CKwiFjFbhAdFPqMlXBqHz82RU/exec";
-let sheetSync = { connected:false, lastSync:null, busy:false };
 
 /* STREAMING_CHUNK:Loading and parsing Database logic... */
 function normalizeRecord(r){
@@ -425,7 +424,6 @@ function normalizeRecord(r){
    STORAGE & SYNC
    ========================================================= */
 async function loadDB(){
-  // Load from local storage for instant render
   try{
     const res = localStorage.getItem('teachers-db');
     if(res) DB = JSON.parse(res);
@@ -446,19 +444,16 @@ async function loadDB(){
 }
 
 async function syncDB() {
-  // Sync in background to avoid freezing UI
   try{
     const res = await fetch(SCRIPT_URL + '?action=list', { cache: 'no-store' });
     const json = await res.json();
     if(json.ok && json.data && json.data.length){
       DB = json.data.map(normalizeRecord);
       await saveDB();
-      render(); // Silent refresh
+      render(); 
     }
-    sheetSync.connected = true;
-    sheetSync.lastSync = new Date();
   }catch(e){
-    sheetSync.connected = false;
+    // Background sync silently fails if offline, which is fine.
   }
 }
 
@@ -509,13 +504,13 @@ function badgeClass(status){
 }
 function statusLabel(status){ return STATUS_LABEL_MR[status] || status || '—'; }
 
+// BUG-FIX: Unique Schools logic now groups purely by UDISE key so records map properly
 function uniqueSchools(){
   const map = new Map();
 
-  // 1. Ensure all 67 schools exist first (Fix for missing schools bug)
   Object.entries(SCHOOL_META).forEach(([udise, meta]) => {
-    const key = meta.school + '||' + udise;
-    map.set(key, {
+    map.set(udise, {
+        key: udise,
         school: meta.school,
         udise: udise,
         brc: 'AMBAJOGAI', 
@@ -527,12 +522,11 @@ function uniqueSchools(){
     });
   });
 
-  // 2. Map dynamic teachers from DB
   DB.forEach(r => {
-    const key = r.school + '||' + r.udise;
+    let key = (r.udise && map.has(r.udise)) ? r.udise : (r.school + '||' + (r.udise||''));
     if(!map.has(key)) {
-        // If user creates a completely new ad-hoc school
         map.set(key, {
+            key: key,
             school: r.school,
             udise: r.udise,
             brc: r.brc,
@@ -546,9 +540,8 @@ function uniqueSchools(){
     map.get(key).teachers.push(r);
   });
 
-  // Filter hidden
   let schoolsArr = Array.from(map.values())
-    .filter(s => isAdmin || !hiddenSchools.includes(s.school+'||'+s.udise));
+    .filter(s => isAdmin || !hiddenSchools.includes(s.key));
 
   return schoolsArr;
 }
@@ -560,13 +553,13 @@ function customKeysFor(list){
   return Array.from(keys);
 }
 
-// Get dynamically sorted lists for dropdowns
-function getDropdownLists(){
+// BUG-FIX: Fetch dropdown options directly from actual rendered schools (solves missing specific category options)
+function getDropdownLists(schoolsList){
   const allM = new Set();
   const allC = new Set();
-  Object.values(SCHOOL_META).forEach(m => {
-    if(m.mgt) allM.add(m.mgt);
-    if(m.cls) allC.add(m.cls);
+  schoolsList.forEach(s => {
+    if(s.mgt) allM.add(s.mgt);
+    if(s.cls) allC.add(s.cls);
   });
   return { mgtList: Array.from(allM).sort(), clsList: Array.from(allC).sort() };
 }
@@ -716,6 +709,13 @@ function openResetModal(){
   };
 }
 
+function bindClose(ids){
+  ids.forEach(id=>{
+    const e = document.getElementById(id);
+    if(e) e.onclick = (ev)=>{ if(ev.target.id===id) closeModal(); };
+  });
+}
+
 /* STREAMING_CHUNK:Implementing forms to Add or Edit Teachers... */
 function openTeacherForm(record){
   const isEdit = !!record;
@@ -814,21 +814,26 @@ function customRowHtml(k,v){
 
 /* STREAMING_CHUNK:Preparing Printer and PDF exporter functions... */
 /* =========================================================
-   PRINT IMPLEMENTATION
+   PRINT IMPLEMENTATION (Bug Fixed: added Timeout & CSS fixes)
    ========================================================= */
 function triggerPrintDialog(htmlContent, documentTitle) {
   const printArea = document.getElementById('printArea');
   printArea.innerHTML = htmlContent;
   const originalTitle = document.title;
   document.title = documentTitle;
-  window.print();
-  document.title = originalTitle;
-  printArea.innerHTML = '';
+  
+  // Timeout added for stability in all browsers rendering wide tables
+  setTimeout(() => {
+    window.print();
+    document.title = originalTitle;
+    printArea.innerHTML = '';
+  }, 150); 
 }
 
 function printSchoolInfo(schoolInfo){
   const list = schoolInfo.teachers;
   const customCols = customKeysFor(list);
+  const colspanLength = 3 + customCols.length;
 
   const html = `
     <h2>${esc(headerSettings.title)}</h2>
@@ -859,7 +864,7 @@ function printSchoolInfo(schoolInfo){
         </tr>
       </thead>
       <tbody>
-        ${list.length === 0 ? `<tr><td colspan="4" style="text-align:center;">कोणतीही नोंद नाही.</td></tr>` : 
+        ${list.length === 0 ? `<tr><td colspan="${colspanLength}" style="text-align:center;">कोणतीही नोंद नाही.</td></tr>` : 
           list.map((t, i) => `
           <tr>
             <td>${i+1}</td>
@@ -926,7 +931,6 @@ function render(){
 
 function renderDashboard(){
   let schools = uniqueSchools();
-  // teachers associated in uniqueSchools
   let totalTeachers = 0;
   const byStatus = {};
   STATUS_OPTS.forEach(s=>byStatus[s]=0);
@@ -974,7 +978,10 @@ function renderDashboard(){
 
 function renderTeachersTab(){
   let list = DB.filter(r=>{
-    if(!isAdmin && hiddenSchools.includes(r.school+'||'+r.udise)) return false;
+    // Fix: Match key generation to uniqueSchools
+    let cardKey = r.udise && SCHOOL_META[r.udise] ? r.udise : (r.school + '||' + (r.udise||''));
+    if(!isAdmin && hiddenSchools.includes(cardKey)) return false;
+    
     if(state.teacherStatus && r.status!==state.teacherStatus) return false;
     if(state.teacherBrc && r.brc!==state.teacherBrc) return false;
     if(state.teacherSearch){
@@ -1048,7 +1055,7 @@ function renderTeachersTab(){
 
 function renderSchoolsTab(){
   let schools = uniqueSchools();
-  const lists = getDropdownLists();
+  const lists = getDropdownLists(schools);
 
   // Filter
   schools = schools.filter(s => {
@@ -1061,15 +1068,22 @@ function renderSchoolsTab(){
     return true;
   });
 
-  // Sort
+  // Sort with safe string checks
   schools.sort((a,b) => {
-    if(state.schoolSort === 'mgt') return a.mgt.localeCompare(b.mgt) || a.school.localeCompare(b.school);
-    if(state.schoolSort === 'cls') return a.cls.localeCompare(b.cls) || a.school.localeCompare(b.school);
-    return a.school.localeCompare(b.school);
+    const mgtA = String(a.mgt || '');
+    const mgtB = String(b.mgt || '');
+    const clsA = String(a.cls || '');
+    const clsB = String(b.cls || '');
+    const schoolA = String(a.school || '');
+    const schoolB = String(b.school || '');
+
+    if(state.schoolSort === 'mgt') return mgtA.localeCompare(mgtB) || schoolA.localeCompare(schoolB);
+    if(state.schoolSort === 'cls') return clsA.localeCompare(clsB) || schoolA.localeCompare(schoolB);
+    return schoolA.localeCompare(schoolB);
   });
 
   if(state.openSchool){
-    const info = schools.find(s=>s.school+'||'+s.udise === state.openSchool);
+    const info = schools.find(s => s.key === state.openSchool);
     if(info) return renderSchoolDetail(info);
     state.openSchool = null; 
   }
@@ -1099,10 +1113,10 @@ function renderSchoolsTab(){
     
     <div class="school-grid">
       ${schools.map((s, index)=>{
-        const isHidden = hiddenSchools.includes(s.school+'||'+s.udise);
+        const isHidden = hiddenSchools.includes(s.key);
         const counts = {}; STATUS_OPTS.forEach(k=>counts[k]=0);
         s.teachers.forEach(t=>counts[t.status]=(counts[t.status]||0)+1);
-        return `<div class="school-card ${isHidden ? 'school-hidden' : ''}" data-key="${esc(s.school+'||'+s.udise)}">
+        return `<div class="school-card ${isHidden ? 'school-hidden' : ''}" data-key="${esc(s.key)}">
           <h4><span class="s-num">#${index + 1}</span> ${esc(s.school)}${isHidden ? ' 🚫' : ''}</h4>
           
           <div class="meta" style="margin-bottom:6px; color:var(--navy);">
@@ -1128,8 +1142,8 @@ function renderSchoolsTab(){
 
 function renderSchoolDetail(info){
   const customCols = customKeysFor(info.teachers);
-  const key = info.school+'||'+info.udise;
-  const isHidden = hiddenSchools.includes(key);
+  const isHidden = hiddenSchools.includes(info.key);
+  const colspanLength = 3 + customCols.length + (isAdmin ? 1 : 0);
 
   return `
     <button class="btn btn-ghost btn-sm" id="backToSchools" style="margin-bottom:14px;">‹ सर्व शाळांकडे परत जा</button>
@@ -1164,7 +1178,7 @@ function renderSchoolDetail(info){
           </tr>
         </thead>
         <tbody>
-          ${info.teachers.length === 0 ? `<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--ink-soft);">सध्या या शाळेत कोणतीही नोंद नाही.</td></tr>` : 
+          ${info.teachers.length === 0 ? `<tr><td colspan="${colspanLength}" style="text-align:center; padding: 20px; color: var(--ink-soft);">सध्या या शाळेत कोणतीही नोंद नाही.</td></tr>` : 
             info.teachers.map((t,i)=>`
             <tr>
               <td>${i+1}</td>
@@ -1192,7 +1206,10 @@ function attachHandlers(){
     if(a) a.onclick = ()=> openTeacherForm(null);
     const e = document.getElementById('dashExportAll');
     if(e) e.onclick = ()=> {
-       let list = DB.filter(r => !hiddenSchools.includes(r.school+'||'+r.udise));
+       let list = DB.filter(r => {
+           let cardKey = r.udise && SCHOOL_META[r.udise] ? r.udise : (r.school + '||' + (r.udise||''));
+           return !hiddenSchools.includes(cardKey);
+       });
        printFullInfo(list, 'Teacher Register');
     };
   }
@@ -1210,7 +1227,8 @@ function attachHandlers(){
     const exp = document.getElementById('exportFilteredPdf');
     if(exp) exp.onclick = ()=>{
       let list = DB.filter(r=>{
-        if(!isAdmin && hiddenSchools.includes(r.school+'||'+r.udise)) return false;
+        let cardKey = r.udise && SCHOOL_META[r.udise] ? r.udise : (r.school + '||' + (r.udise||''));
+        if(!isAdmin && hiddenSchools.includes(cardKey)) return false;
         if(state.teacherStatus && r.status!==state.teacherStatus) return false;
         if(state.teacherBrc && r.brc!==state.teacherBrc) return false;
         if(state.teacherSearch){
@@ -1256,14 +1274,14 @@ function attachHandlers(){
     
     const dl = document.getElementById('printSchoolBtn');
     if(dl) dl.onclick = ()=>{
-      const info = uniqueSchools().find(x=>x.school+'||'+x.udise===state.openSchool);
+      const info = uniqueSchools().find(x=>x.key===state.openSchool);
       if(info) printSchoolInfo(info);
     };
     
     const addToSchool = document.getElementById('addTeacherToSchool');
     if(addToSchool) addToSchool.onclick = ()=> {
-      const info = uniqueSchools().find(x=>x.school+'||'+x.udise===state.openSchool);
-      openTeacherForm({id:null, brc:info.brc, school:info.school, udise:info.udise, teacher:'', status:'उपस्थित', custom:{}});
+      const info = uniqueSchools().find(x=>x.key===state.openSchool);
+      openTeacherForm({id:null, brc:info.brc || 'AMBAJOGAI', school:info.school, udise:info.udise, teacher:'', status:'उपस्थित', custom:{}});
     };
     
     const toggleHide = document.getElementById('toggleSchoolHide');
@@ -1300,17 +1318,12 @@ let state = {
 };
 
 (async function init(){
-  // Prevent UI Freeze: 
-  // 1. Instantly load fast local storage data.
-  // 2. Render HTML.
-  // 3. Initiate background sync.
   await loadDB();
   renderAdminArea();
   render();
-  
-  // Start the background data synchronization
   syncDB();
 })();
 </script>
 </body>
 </html>
+```eof
