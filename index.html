@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Details Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* A4 PDF Print Styles */
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+                margin: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .print-container {
+                width: 100%;
+                padding: 0;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                border: 1px solid #333 !important;
+                padding: 4px !important;
+                font-size: 10px !important;
+                text-align: left;
+                color: black !important;
+            }
+            h1 {
+                font-size: 16px !important;
+                text-align: center;
+                margin-bottom: 10px;
+                color: black !important;
+            }
+            .group-header {
+                background-color: #e5e7eb !important;
+                font-weight: bold;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans p-4 print-container">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <h1 class="text-3xl font-bold text-slate-700">शाळा आणि मुख्याध्यापक यादी (Ambajogai)</h1>
+            <div class="no-print space-x-3">
+                <button onclick="openModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition">
+                    + Add New School
+                </button>
+                <button onclick="window.print()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition">
+                    🖨️ Print / Save A4 PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-slate-200 mb-10">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-slate-100">
+                    <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-600">UDISE</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-600">School Name</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-600">Management Type</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-600">Principal</th>
+                        <th class="px-4 py-3 text-left font-semibold text-slate-600">Mobile</th>
+                        <th class="px-4 py-3 text-center font-semibold text-slate-600 w-24 no-print">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-slate-200">
+                    <!-- Rows will be populated by JavaScript grouped by classes -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add / Edit Modal -->
+    <div id="schoolModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center no-print z-50">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
+            <h2 id="modalTitle" class="text-xl font-bold mb-4 text-slate-700">Add New School</h2>
+            
+            <form id="schoolForm" class="space-y-4">
+                <input type="hidden" id="editIndex" value="-1">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">UDISE Code</label>
+                        <input type="text" id="udise" required class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Management Type</label>
+                        <select id="management" required class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
+                            <option value="Zilla Parishad">Zilla Parishad</option>
+                            <option value="Private/Other">Private/Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">School Name</label>
+                    <input type="text" id="schoolName" required class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Classes (Group Name)</label>
+                    <input type="text" id="classes" placeholder="e.g., इयत्ता १ ते ४ (Class 1 to 4)" required class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Principal Name</label>
+                        <input type="text" id="principal" class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-1">Mobile Number</label>
+                        <input type="text" id="mobile" class="w-full border border-slate-300 rounded px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded transition">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition">Save Details</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Full Initial Dataset loaded from the provided PDF details
+        let schools = [
+            {"schoolName": "जि.प.प्रा.शा. क्र. २, अंबाजोगाई", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270101613", "principal": "बळीराम शिवदास आकुसकर", "mobile": "9011999904", "management": "Zilla Parishad"},
+            {"schoolName": "मिलिया प्रा. शा. अंबा", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270101620", "principal": "SHAIKH JAMEEL NAWAB", "mobile": "9960454571", "management": "Private/Other"},
+            {"schoolName": "नारायणा वर्ल्ड स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270101695", "principal": "Thorat G P", "mobile": "8329811192", "management": "Private/Other"},
+            {"schoolName": "जि.प.प्रा.शा. साकुड (मराठी)", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270102401", "principal": "अंगद कोंडीबा घुले", "mobile": "9822373937", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. भीमाई वस्ती", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270102503", "principal": "वंदना तुकाराम उजगरे", "mobile": "9552983384", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. २", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270102601", "principal": "संजय हणमंतराव कचकलवार", "mobile": "9284746414", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. मांडवा तांडा", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270102801", "principal": "संजय ज्ञानोबा पाडोळे", "mobile": "7020929833", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. नागझरी वसाहत", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103001", "principal": "बालासाहेब व्यंकटराव कातळे", "mobile": "8999022483", "management": "Zilla Parishad"},
+            {"schoolName": "कै. दादाराव कराड प्रा. शा. नागझरी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103002", "principal": "KARAD RAMRAJE NARAYAN", "mobile": "9730035874", "management": "Private/Other"},
+            {"schoolName": "जि.प.प्रा.शा. सह्याद्री नगर शेपवाडी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103102", "principal": "अनिता सदाशिव नखाते", "mobile": "9403356595", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. वरवटी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103301", "principal": "ज्योतीबाई देवीदासराव शिंदे", "mobile": "9403645467", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. उघडे वस्ती (वरवटी)", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103303", "principal": "शोभा अंगदराव चाटे", "mobile": "8999768368", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. तलाव पाटी", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103401", "principal": "मनीषा धोंडोपंत चिंचोलीकर", "mobile": "9420194266", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. गिरवली आपेट", "classes": "इयत्ता १ ते ४ (Class 1 to 4)", "udise": "27270103701", "principal": "सुनिल आनंदराव फुलेवार", "mobile": "9423733945", "management": "Zilla Parishad"},
+            {"schoolName": "खोलेश्वर जीनियस सीबीएससी स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270100109", "principal": "Pratibha Ankush Shinde", "mobile": "9975791303", "management": "Private/Other"},
+            {"schoolName": "छत्रपती संभाजी राजे ग्लोबल स्कूल आणि ज्युनियर कॉलेज जोगाईवाडी", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270101688", "principal": "Gangane Shashikala Nagorao", "mobile": "8788801400", "management": "Private/Other"},
+            {"schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. १", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270102501", "principal": "उत्तम बाबुराव डोंगरे", "mobile": "9689008389", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. काळवटी तांडा क्र. ३", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270102502", "principal": "मंजुषा भीमाशंकर जिडगे", "mobile": "9561941714", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. पोलेवाडी", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270102901", "principal": "राजेसाहेब वैजनाथराव सोमवंशी", "mobile": "7020708970", "management": "Zilla Parishad"},
+            {"schoolName": "जि. प. प्रा.शा. गोल्टावस्ती", "classes": "इयत्ता १ ते ५ (Class 1 to 5)", "udise": "27270103502", "principal": "शालन नागनाथ जोगदंड", "mobile": "9763233793", "management": "Zilla Parishad"},
+            {"schoolName": "श्री साई समर्थ प्रा. शा.", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270102405", "principal": "उपलब्ध नाही", "mobile": "उपलब्ध नाही", "management": "Private/Other"},
+            {"schoolName": "सी.पी.एस. रविवार पेठ", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101612", "principal": "इंद्रजित शिवाजीराव डांगे", "mobile": "9403023319", "management": "Private/Other"},
+            {"schoolName": "कै. देवराव बालाजी गणगे योगेश्वरी नूतन प्राथमिक विभाग अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101618", "principal": "KHANDERAO BHAGWANRAO NANDGAONKAR", "mobile": "9881638496", "management": "Private/Other"},
+            {"schoolName": "नेताजी सुभाषचंद्र प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101619", "principal": "Magar RB", "mobile": "9421946215", "management": "Private/Other"},
+            {"schoolName": "खोलेश्वर प्रा. शा. अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101626", "principal": "Shivaji Angad Hendge", "mobile": "9421375441", "management": "Private/Other"},
+            {"schoolName": "उर्दू प्रा. शा. रविवार पेठ अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101628", "principal": "Qureshi Mohammed Ilyasuddin Salimuddin", "mobile": "9422742930", "management": "Private/Other"},
+            {"schoolName": "न्यू इंग्लिश प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101629", "principal": "Mr Bhasme Mahesh Marutirao", "mobile": "9403645496", "management": "Private/Other"},
+            {"schoolName": "घाट नागनाथ प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101633", "principal": "SOLANKE SANDHYA UTTAMRAO", "mobile": "8830773269", "management": "Private/Other"},
+            {"schoolName": "श्री व्यंकटेश विद्या मंदिर प्रा. शा. अंबा", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270101660", "principal": "Chaudhari SG", "mobile": "8805044747", "management": "Private/Other"},
+            {"schoolName": "जि.प.प्रा.शा. मांडवा पठाण", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270102701", "principal": "बापूराव राघुआप्पा धारेकर", "mobile": "7020752753", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. शेपवाडी", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270103101", "principal": "शैलजा उत्तमराव जोशी", "mobile": "9403882075", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. पिंपळा धायगुडा (मराठी)", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270103201", "principal": "संजीव कचरू उमाप", "mobile": "9284023434", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. पिंपळा धायगुडा (उर्दू)", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270103203", "principal": "सय्यदा हिना सय्यद सरफराजोद्दीन", "mobile": "8600504215", "management": "Zilla Parishad"},
+            {"schoolName": "जि.प.प्रा.शा. अंबलवाडी", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270103501", "principal": "आनंद पांडुरंग सिरसाट", "mobile": "9850940078", "management": "Zilla Parishad"},
+            {"schoolName": "सोमेश्वर उर्दू प्राथमिक शाळा पिंपळा धायगुडा अंबाजोगाई", "classes": "इयत्ता १ ते ७ (Class 1 to 7)", "udise": "27270105504", "principal": "Pathan Sartaj Khan Razzak Khan", "mobile": "9767116668", "management": "Private/Other"},
+            {"schoolName": "जिजाऊ स्कूल भगवानबाबा चौक अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270100105", "principal": "Londhal DA", "mobile": "9405247008", "management": "Private/Other"},
+            {"schoolName": "नूरजहाँ उर्दू प्राथमिक शाळा अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270101623", "principal": "FAIZ MOOSA SAYYED", "mobile": "9028891469", "management": "Private/Other"},
+            {"schoolName": "सुलावंतीबाई बाळासाहेब शिंदे प्रा. शा. इंग्लिश अंबाजोगाई", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270101685", "principal": "Bade Rekha Subhash", "mobile": "9404121272", "management": "Private/Other"},
+            {"schoolName": "जि.प.प्रा.शा. साकुड (उर्दू)", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270102404", "principal": "आरिफ अहमद अब्दुल रशीद शेख", "mobile": "9405292799", "management": "Zilla Parishad"},
+            {"schoolName": "तुकाराम पाटील प्रा. शा. गिरवली", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270103802", "principal": "Gangane Anant Satwaram", "mobile": "9421913422", "management": "Private/Other"},
+            {"schoolName": "जिजाऊ इंटरनॅशनल स्कूल गिरवली (बी)", "classes": "इयत्ता १ ते ८ (Class 1 to 8)", "udise": "27270103803", "principal": "Apet S B", "mobile": "9422773141", "management": "Private/Other"},
+            {"schoolName": "प्रमोदजी महाजन न्यू इंग्लिश स्कूल", "classes": "इयत्ता १ ते १० (Class 1 to 10)", "udise": "27270101669", "principal": "Dr Yogesh Subhashrao Kulkarni", "mobile": "9422745733", "management": "Private/Other"},
+            {"schoolName": "जि.प.हा.स्कू. गिरवली", "classes": "इयत्ता १ ते १० (Class 1 to 10)", "udise": "27270103801", "principal": "Ravindra Deogaonkar", "mobile": "9405662166", "management": "Zilla Parishad"},
+            {"schoolName": "मुक्तांगण विद्यालय गिरवली रोड अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270100107", "principal": "Shinde BV", "mobile": "9422773141", "management": "Private/Other"},
+            {"schoolName": "विझडम इंग्लिश स्कूल ज्युनियर कॉलेज अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270100110", "principal": "Shaikh Ayesha Kirmani Naseer", "mobile": "9403881891", "management": "Private/Other"},
+            {"schoolName": "स्कॉलर्स एज्युकेशन पॅलेस अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270100111", "principal": "PATHAN ARSHAD", "mobile": "8380921212", "management": "Private/Other"},
+            {"schoolName": "न्यू विजन इंग्लिश स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270101654", "principal": "M Prashant Kumar", "mobile": "9665746911", "management": "Private/Other"},
+            {"schoolName": "एरा इंटरनॅशनल स्कूल अंबाजोगाई", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270101690", "principal": "Deshmukh Matin Ghulamrasoolatin", "mobile": "9730668387", "management": "Private/Other"},
+            {"schoolName": "सरस्वती पब्लिक स्कूल नागझरी", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270103003", "principal": "RAUT SS", "mobile": "9730035872", "management": "Private/Other"},
+            {"schoolName": "प्रेषिता इंटरनॅशनल स्कूल आणि ज्युनियर कॉलेज", "classes": "इयत्ता १ ते १२ (Class 1 to 12)", "udise": "27270103702", "principal": "उपलब्ध नाही", "mobile": "उपलब्ध नाही", "management": "Private/Other"},
+            {"schoolName": "डॉ. राम भालचंद्र हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101615", "principal": "Awad Sunil Premraj", "mobile": "9422931408", "management": "Private/Other"},
+            {"schoolName": "योगेश्वरी नूतन हायस्कूल अंबा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101635", "principal": "Shrimati PATHAK APARNA RAOSAHEB", "mobile": "9403927545", "management": "Private/Other"},
+            {"schoolName": "श्रीमती गोदावरीबाई कुंकुलोळ योगेश्वरी कन्या हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101636", "principal": "MEENA SURESH KULKARNI", "mobile": "8459332551", "management": "Private/Other"},
+            {"schoolName": "नेताजी सुभाष हायस्कूल अंबा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101639", "principal": "Shinde Satish Bhagvat", "mobile": "9421344616", "management": "Private/Other"},
+            {"schoolName": "खोलेश्वर हायस्कूल अंबाजोगाई", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101643", "principal": "Anantram sundarrao Kople", "mobile": "9403571582", "management": "Private/Other"},
+            {"schoolName": "कै. दादाराव कराड हायस्कूल शेपवाडी", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270101648", "principal": "KARAD RAMRAJE NARAYAN", "mobile": "9730035874", "management": "Private/Other"},
+            {"schoolName": "सरस्वती हायस्कूल साकुड", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270102402", "principal": "Tambade GS", "mobile": "7709196103", "management": "Private/Other"},
+            {"schoolName": "वेनगंगा हायस्कूल मांडवा पठाण", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270102702", "principal": "Shri Jadhav Rajendra Ramkaran", "mobile": "9028987610", "management": "Private/Other"},
+            {"schoolName": "अल्लाम सिद्दीकी अल. उर्दू हायस्कूल पिंपळा धायगुडा", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270103202", "principal": "Shaikh Nabee Babamiya", "mobile": "9850646724", "management": "Private/Other"},
+            {"schoolName": "वसंतराव नाईक विद्यालय वरवटी", "classes": "इयत्ता ५ ते १० (Class 5 to 10)", "udise": "27270103302", "principal": "MUNDE SS", "mobile": "9421277292", "management": "Private/Other"},
+            {"schoolName": "जोधाप्रसाद मोदी माध्यमिक व उच्च माध्यमिक शाळा अंबाजोगाई", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "udise": "27270101614", "principal": "Munje VA", "mobile": "9421341688", "management": "Private/Other"},
+            {"schoolName": "मिलिया हायस्कूल अंबा", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "udise": "27270101640", "principal": "MOHAMMAD IRSHAD AHMED", "mobile": "9284931302", "management": "Private/Other"},
+            {"schoolName": "श्री व्यंकटेश विद्या मंदिर हायस्कूल अंबा", "classes": "इयत्ता ५ ते १२ (Class 5 to 12)", "udise": "27270101661", "principal": "Shri KAKADE S B", "mobile": "8805044747", "management": "Private/Other"},
+            {"schoolName": "छत्रपती संभाजी राजे ग्लोबल स्कूल जोगाईवाडी", "classes": "इयत्ता ६ ते १२ (Class 6 to 12)", "udise": "27270101305", "principal": "Gangane Shashikala Nagorao", "mobile": "8788801400", "management": "Private/Other"},
+            {"schoolName": "मन्सूर हायस्कूल रविवार पेठ अंबाजोगाई", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "udise": "27270101647", "principal": "SAYYED MERAJ AHMAD MOOSA", "mobile": "9822283894", "management": "Private/Other"},
+            {"schoolName": "सावरकर विद्यालय पिंपळा धायगुडा", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "udise": "27270101649", "principal": "Annasaheb Mukundrao Hulge", "mobile": "9767801101", "management": "Private/Other"},
+            {"schoolName": "न्यू इंग्लिश हायस्कूल गुरुवार पेठ अंबाजोगाई", "classes": "इयत्ता ८ ते १० (Class 8 to 10)", "udise": "27270101653", "principal": "BHASME MM", "mobile": "9890038251", "management": "Private/Other"}
+        ];
+
+        // Load schools from LocalStorage if they exist, otherwise use initial data
+        const storedSchools = localStorage.getItem('schoolsDataPdf');
+        if (storedSchools) {
+            schools = JSON.parse(storedSchools);
+        }
+
+        // Save data to LocalStorage
+        function saveData() {
+            localStorage.setItem('schoolsDataPdf', JSON.stringify(schools));
+        }
+
+        // Render Table logic - Groups by 'classes' automatically
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            // Group schools by their classes string
+            const groupedSchools = {};
+            schools.forEach((school, index) => {
+                if (!groupedSchools[school.classes]) {
+                    groupedSchools[school.classes] = [];
+                }
+                groupedSchools[school.classes].push({ school, index });
+            });
+
+            // Loop through each group to render headers and rows
+            for (const className in groupedSchools) {
+                // Add group header row
+                const headerTr = document.createElement('tr');
+                headerTr.className = "bg-slate-200 text-slate-800 font-bold group-header border-y-2 border-slate-300";
+                headerTr.innerHTML = `
+                    <td colspan="6" class="px-4 py-3 text-center text-md tracking-wider">${className}</td>
+                `;
+                tbody.appendChild(headerTr);
+
+                // Add school rows for this group
+                groupedSchools[className].forEach(item => {
+                    const school = item.school;
+                    const index = item.index;
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                    tr.innerHTML = `
+                        <td class="px-4 py-2 font-mono text-slate-700">${school.udise}</td>
+                        <td class="px-4 py-2 font-medium text-slate-800">${school.schoolName}</td>
+                        <td class="px-4 py-2">
+                            <span class="px-2 py-1 rounded text-xs font-semibold ${school.management === 'Zilla Parishad' ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800'}">
+                                ${school.management}
+                            </span>
+                        </td>
+                        <td class="px-4 py-2 text-slate-700">${school.principal}</td>
+                        <td class="px-4 py-2 text-slate-700">${school.mobile}</td>
+                        <td class="px-4 py-2 text-center no-print">
+                            <button onclick="editSchool(${index})" class="text-blue-500 hover:text-blue-700 mr-2 font-semibold">Edit</button>
+                            <button onclick="deleteSchool(${index})" class="text-red-500 hover:text-red-700 font-semibold">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        // Modal Controls
+        const modal = document.getElementById('schoolModal');
+        const form = document.getElementById('schoolForm');
+
+        function openModal() {
+            document.getElementById('modalTitle').innerText = "Add New School";
+            form.reset();
+            document.getElementById('editIndex').value = "-1";
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Edit Functionality
+        function editSchool(index) {
+            const school = schools[index];
+            document.getElementById('modalTitle').innerText = "Edit School Details";
+            document.getElementById('editIndex').value = index;
+            
+            document.getElementById('udise').value = school.udise;
+            document.getElementById('schoolName').value = school.schoolName;
+            document.getElementById('classes').value = school.classes;
+            document.getElementById('management').value = school.management;
+            document.getElementById('principal').value = school.principal;
+            document.getElementById('mobile').value = school.mobile;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // Delete Functionality
+        function deleteSchool(index) {
+            if(confirm("Are you sure you want to delete this school's details?")) {
+                schools.splice(index, 1);
+                saveData();
+                renderTable();
+            }
+        }
+
+        // Form Submit (Save / Update)
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const index = parseInt(document.getElementById('editIndex').value);
+            const newSchool = {
+                udise: document.getElementById('udise').value.trim(),
+                schoolName: document.getElementById('schoolName').value.trim(),
+                classes: document.getElementById('classes').value.trim(),
+                management: document.getElementById('management').value,
+                principal: document.getElementById('principal').value.trim(),
+                mobile: document.getElementById('mobile').value.trim()
+            };
+
+            if (index === -1) {
+                schools.push(newSchool); // Add
+            } else {
+                schools[index] = newSchool; // Update
+            }
+
+            saveData();
+            renderTable();
+            closeModal();
+        });
+
+        // Initial Render on page load
+        renderTable();
+    </script>
+</body>
+</html>
